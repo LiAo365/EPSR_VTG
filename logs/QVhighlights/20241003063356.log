@@ -1,0 +1,612 @@
+[2024-10-03 06:33:56 INFO]: Environment info:
+----------------------  ---------------------------------------------------------------------------------------------------
+System                  Linux
+Python                  3.12.5 | packaged by Anaconda, Inc. | (main, Sep 12 2024, 18:27:27) [GCC 11.2.0]
+CPU                     Intel(R) Xeon(R) Platinum 8358P CPU @ 2.60GHz
+CUDA_HOME               /usr/local/cuda
+NVCC                    Build cuda_11.8.r11.8/compiler.31833905_0
+GPU 0                   NVIDIA A100 80GB PCIe
+PyTorch                 2.3.1 @ /public/home/zyq_202324131079/miniconda3/envs/tvg/lib/python3.12/site-packages/torch
+PyTorch debug build     False
+torchvision             0.18.1 @ /public/home/zyq_202324131079/miniconda3/envs/tvg/lib/python3.12/site-packages/torchvision
+torchvision arch flags  sm_35, sm_50, sm_60, sm_70, sm_75, sm_80, sm_86
+nncore                  0.4.5
+numpy                   2.0.1
+PIL                     10.4.0
+cv2                     <not-found>
+----------------------  ---------------------------------------------------------------------------------------------------
+PyTorch built with:
+  - GCC 9.3
+  - C++ Version: 201703
+  - Intel(R) oneAPI Math Kernel Library Version 2023.1-Product Build 20230303 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v3.3.6 (Git Hash 86e6af5974177e513fd3fee58425e1063e7f1361)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX512
+  - CUDA Runtime 11.8
+  - NVCC architecture flags: -gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_61,code=sm_61;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_90,code=sm_90;-gencode;arch=compute_37,code=compute_37
+  - CuDNN 8.7
+  - Magma 2.6.1
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.8, CUDNN_VERSION=8.7.0, CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/c++, CXX_FLAGS= -D_GLIBCXX_USE_CXX11_ABI=0 -fabi-version=11 -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -DNDEBUG -DUSE_KINETO -DLIBKINETO_NOROCTRACER -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -O2 -fPIC -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Werror=bool-operation -Wnarrowing -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-strict-overflow -Wno-strict-aliasing -Wno-stringop-overflow -Wsuggest-override -Wno-psabi -Wno-error=pedantic -Wno-error=old-style-cast -Wno-missing-braces -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=2.3.1, USE_CUDA=ON, USE_CUDNN=ON, USE_CUSPARSELT=1, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_GLOO=ON, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, USE_ROCM_KERNEL_ASSERT=OFF, 
+
+[2024-10-03 06:33:56 INFO]: Launcher: None
+[2024-10-03 06:33:56 INFO]: Config: /public/home/zyq_202324131079/code/R2Tuning/configs/qvhighlights/r2_tuning_qvhighlights.py
+model = dict(
+    type='R2Tuning',
+    arch='ViT-B/32',
+    init=False,
+    dims=256,
+    strides=(1, 2, 4, 8),
+    buffer_size=1024,
+    max_num_moment=50,
+    adapter_cfg=dict(
+        type='R2Block',
+        k=4,
+        dropout=0.5,
+        use_tef=True,
+        pos_cfg=dict(
+            type='PositionalEncoding',
+            normalize=True,
+            max_len=1024),
+        tem_cfg=dict(
+            type='TransformerDecoderLayer',
+            heads=8,
+            ratio=4,
+            att_dropout=0.0,
+            ffn_dropout=0.0,
+            att_out_dropout=0.0,
+            ffn_out_dropout=0.0,
+            droppath=0.1,
+            pre_norm=False,
+            bias=True,
+            norm_cfg=dict(type='LN'),
+            act_cfg=dict(
+                type='ReLU',
+                inplace=True),
+            order=('cross_att', 'self_att', 'ffn'),
+            att_init_cfg=dict(
+                type='xavier',
+                distribution='uniform'),
+            ffn_init_cfg=dict(type='kaiming'))),
+    motion_cfg=dict(type='MotionBlock'),
+    pyramid_cfg=dict(type='ConvPyramid'),
+    pooling_cfg=dict(type='AdaPooling'),
+    class_head_cfg=dict(
+        type='ConvHead',
+        kernel_size=3),
+    coord_head_cfg=dict(
+        type='ConvHead',
+        kernel_size=3),
+    loss_cfg=dict(
+        type='BundleLoss',
+        sample_radius=1.5,
+        loss_cls=dict(
+            type='FocalLoss',
+            loss_weight=1.0),
+        loss_reg=dict(
+            type='L1Loss',
+            loss_weight=0.2),
+        loss_sal=dict(
+            type='SampledNCELoss',
+            loss_weight=0.1),
+        loss_video_cal=dict(
+            type='InfoNCELoss',
+            loss_weight=0.1),
+        loss_layer_cal=dict(
+            type='InfoNCELoss',
+            loss_weight=0.1),
+        loss_motion=dict(
+            type='Seq2SeqCLLoss',
+            loss_weight=2.5)))
+data_type = 'Grounding'
+data_root = '/public/home/zyq_202324131079/data/qvhighlights/'
+data = dict(
+    train=dict(
+        type='RepeatDataset',
+        times=4,
+        dataset=dict(
+            type='Grounding',
+            label_path='/public/home/zyq_202324131079/data/qvhighlights/qvhighlights_train.jsonl',
+            video_path='/public/home/zyq_202324131079/data/qvhighlights/frames_224_0.5fps',
+            cache_path='/public/home/zyq_202324131079/data/qvhighlights/clip_b32_vid_k4',
+            query_path='/public/home/zyq_202324131079/data/qvhighlights/clip_b32_txt_k4',
+            use_cache=True,
+            min_video_len=5,
+            fps=0.5,
+            unit=2),
+        loader=dict(
+            batch_size=128,
+            num_workers=4,
+            pin_memory=True,
+            shuffle=True)),
+    val=dict(
+        type='Grounding',
+        label_path='/public/home/zyq_202324131079/data/qvhighlights/qvhighlights_val.jsonl',
+        video_path='/public/home/zyq_202324131079/data/qvhighlights/frames_224_0.5fps',
+        cache_path='/public/home/zyq_202324131079/data/qvhighlights/clip_b32_vid_k4',
+        query_path='/public/home/zyq_202324131079/data/qvhighlights/clip_b32_txt_k4',
+        use_cache=True,
+        fps=0.5,
+        unit=2,
+        loader=dict(
+            batch_size=1,
+            num_workers=2,
+            pin_memory=True,
+            shuffle=False)),
+    test=dict(
+        type='Grounding',
+        label_path='/public/home/zyq_202324131079/data/qvhighlights/qvhighlights_test.jsonl',
+        video_path='/public/home/zyq_202324131079/data/qvhighlights/frames_224_0.5fps',
+        cache_path='/public/home/zyq_202324131079/data/qvhighlights/clip_b32_vid_k4',
+        query_path='/public/home/zyq_202324131079/data/qvhighlights/clip_b32_txt_k4',
+        use_cache=True,
+        fps=0.5,
+        unit=2,
+        loader=dict(
+            batch_size=1,
+            num_workers=2,
+            pin_memory=True,
+            shuffle=False)))
+stages = dict(
+    epochs=30,
+    optimizer=dict(
+        type='AdamW',
+        lr=0.0005,
+        weight_decay=0.0001),
+    lr_schedule=dict(
+        type='epoch',
+        policy='step',
+        step=[20]),
+    warmup=dict(
+        type='iter',
+        policy='linear',
+        steps=500,
+        ratio=0.001),
+    grad_clip=dict(
+        max_norm=35,
+        norm_type=2),
+    validation=dict(interval=1))
+hooks = dict(
+    type='EvalHook',
+    high_keys=['MR-full-mAP', 'MR-full-mIoU', 'HL-min-VeryGood-mAP', 'MR-full-R1@0.3', 'MR-full-R1@0.5', 'MR-full-R1@0.7', 'mAP'])
+[2024-10-03 06:33:56 INFO]: Using random seed: 89138006
+[2024-10-03 06:33:56 INFO]: Model architecture:
+R2Tuning(
+  (adapter): R2Block(
+    (video_map): Sequential(
+      (0): LayerNorm((770,), eps=1e-05, elementwise_affine=True)
+      (1): Dropout(p=0.5, inplace=False)
+      (2): Linear(in_features=770, out_features=256, bias=True)
+      (3): ReLU(inplace=True)
+      (4): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+      (5): Dropout(p=0.5, inplace=False)
+      (6): Linear(in_features=256, out_features=256, bias=True)
+    )
+    (query_map): Sequential(
+      (0): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      (1): Dropout(p=0.5, inplace=False)
+      (2): Linear(in_features=512, out_features=256, bias=True)
+      (3): ReLU(inplace=True)
+      (4): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+      (5): Dropout(p=0.5, inplace=False)
+      (6): Linear(in_features=256, out_features=256, bias=True)
+    )
+    (v_map): Linear(in_features=256, out_features=256, bias=True)
+    (q_map): Linear(in_features=256, out_features=256, bias=True)
+    (pos): PositionalEncoding(dims=256, temperature=10000, normalize=True, scale=6.283185307179586, offset=0.0)
+    (tem): TransformerDecoderLayer(
+      (cross_att): MultiHeadAttention(q_dims=256, k_dims=256, v_dims=256, h_dims=256, o_dims=256, heads=8, att_dropout=0.0, out_dropout=0.0, bias=True)
+      (cross_att_norm): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+      (self_att): MultiHeadAttention(q_dims=256, k_dims=256, v_dims=256, h_dims=256, o_dims=256, heads=8, att_dropout=0.0, out_dropout=0.0, bias=True)
+      (self_att_norm): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+      (ffn): FeedForwardNetwork(dims=256, ratio=4, ffn_dropout=0.0, out_dropout=0.0)
+      (ffn_norm): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+      (droppath): DropPath(p=0.1)
+    )
+  )
+  (motion_block): MotionBlock()
+  (pyramid): ConvPyramid(
+    (blocks): ModuleList(
+      (0): ReLU(inplace=True)
+      (1): Sequential(
+        (0): Permute()
+        (1): Conv1d(256, 256, kernel_size=(2,), stride=(2,))
+        (2): Permute()
+        (3): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+        (4): ReLU(inplace=True)
+      )
+      (2): Sequential(
+        (0): Permute()
+        (1): Conv1d(256, 256, kernel_size=(2,), stride=(2,))
+        (2): Permute()
+        (3): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+        (4): ReLU(inplace=True)
+        (5): Permute()
+        (6): Conv1d(256, 256, kernel_size=(2,), stride=(2,))
+        (7): Permute()
+        (8): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+        (9): ReLU(inplace=True)
+      )
+      (3): Sequential(
+        (0): Permute()
+        (1): Conv1d(256, 256, kernel_size=(2,), stride=(2,))
+        (2): Permute()
+        (3): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+        (4): ReLU(inplace=True)
+        (5): Permute()
+        (6): Conv1d(256, 256, kernel_size=(2,), stride=(2,))
+        (7): Permute()
+        (8): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+        (9): ReLU(inplace=True)
+        (10): Permute()
+        (11): Conv1d(256, 256, kernel_size=(2,), stride=(2,))
+        (12): Permute()
+        (13): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+        (14): ReLU(inplace=True)
+      )
+    )
+  )
+  (pooling): AdaPooling(
+    (att): Linear(in_features=256, out_features=1, bias=False)
+  )
+  (class_head): ConvHead(
+    (module): Sequential(
+      (0): Permute()
+      (1): Conv1d(256, 256, kernel_size=(3,), stride=(1,), padding=(1,))
+      (2): ReLU(inplace=True)
+      (3): Conv1d(256, 1, kernel_size=(3,), stride=(1,), padding=(1,))
+      (4): Permute()
+    )
+  )
+  (coord_head): ConvHead(
+    (module): Sequential(
+      (0): Permute()
+      (1): Conv1d(256, 256, kernel_size=(3,), stride=(1,), padding=(1,))
+      (2): ReLU(inplace=True)
+      (3): Conv1d(256, 2, kernel_size=(3,), stride=(1,), padding=(1,))
+      (4): Permute()
+    )
+  )
+  (generator): PointGenerator(
+    (buffer): BufferList()
+  )
+  (loss): BundleLoss(
+    (_loss_cls): FocalLoss(alpha=-1, gamma=2.0, reduction='mean', loss_weight=1.0)
+    (_loss_reg): L1Loss(reduction='mean', loss_weight=0.2)
+    (_loss_sal): SampledNCELoss(temperature=0.07, max_scale=100, learnable=False, direction=('row', 'col'), loss_weight=0.1)
+    (_loss_video_cal): InfoNCELoss(temperature=0.07, max_scale=100, learnable=False, dist=False, loss_weight=0.1)
+    (_loss_layer_cal): InfoNCELoss(temperature=0.07, max_scale=100, learnable=False, dist=False, loss_weight=0.1)
+    (_loss_motion): Seq2SeqCLLoss()
+  )
+)
+[2024-10-03 06:33:56 INFO]: Learnable Parameters:
+[2024-10-03 06:33:56 INFO]: module.coef - torch.Size([4])
+[2024-10-03 06:33:56 INFO]: module.adapter.gate - torch.Size([3])
+[2024-10-03 06:33:56 INFO]: module.adapter.scale - torch.Size([4])
+[2024-10-03 06:33:56 INFO]: module.adapter.video_map.0.weight - torch.Size([770])
+[2024-10-03 06:33:56 INFO]: module.adapter.video_map.0.bias - torch.Size([770])
+[2024-10-03 06:33:56 INFO]: module.adapter.video_map.2.weight - torch.Size([256, 770])
+[2024-10-03 06:33:56 INFO]: module.adapter.video_map.2.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.video_map.4.weight - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.video_map.4.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.video_map.6.weight - torch.Size([256, 256])
+[2024-10-03 06:33:56 INFO]: module.adapter.video_map.6.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.query_map.0.weight - torch.Size([512])
+[2024-10-03 06:33:56 INFO]: module.adapter.query_map.0.bias - torch.Size([512])
+[2024-10-03 06:33:56 INFO]: module.adapter.query_map.2.weight - torch.Size([256, 512])
+[2024-10-03 06:33:56 INFO]: module.adapter.query_map.2.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.query_map.4.weight - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.query_map.4.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.query_map.6.weight - torch.Size([256, 256])
+[2024-10-03 06:33:56 INFO]: module.adapter.query_map.6.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.v_map.weight - torch.Size([256, 256])
+[2024-10-03 06:33:56 INFO]: module.adapter.v_map.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.q_map.weight - torch.Size([256, 256])
+[2024-10-03 06:33:56 INFO]: module.adapter.q_map.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.cross_att.q.weight - torch.Size([256, 256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.cross_att.q.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.cross_att.k.weight - torch.Size([256, 256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.cross_att.k.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.cross_att.v.weight - torch.Size([256, 256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.cross_att.v.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.cross_att.m.weight - torch.Size([256, 256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.cross_att.m.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.cross_att_norm.weight - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.cross_att_norm.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.self_att.q.weight - torch.Size([256, 256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.self_att.q.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.self_att.k.weight - torch.Size([256, 256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.self_att.k.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.self_att.v.weight - torch.Size([256, 256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.self_att.v.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.self_att.m.weight - torch.Size([256, 256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.self_att.m.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.self_att_norm.weight - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.self_att_norm.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.ffn.mapping.0.weight - torch.Size([1024, 256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.ffn.mapping.0.bias - torch.Size([1024])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.ffn.mapping.2.weight - torch.Size([256, 1024])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.ffn.mapping.2.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.ffn_norm.weight - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.adapter.tem.ffn_norm.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.1.1.weight - torch.Size([256, 256, 2])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.1.1.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.1.3.weight - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.1.3.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.2.1.weight - torch.Size([256, 256, 2])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.2.1.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.2.3.weight - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.2.3.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.2.6.weight - torch.Size([256, 256, 2])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.2.6.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.2.8.weight - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.2.8.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.3.1.weight - torch.Size([256, 256, 2])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.3.1.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.3.3.weight - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.3.3.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.3.6.weight - torch.Size([256, 256, 2])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.3.6.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.3.8.weight - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.3.8.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.3.11.weight - torch.Size([256, 256, 2])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.3.11.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.3.13.weight - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.pyramid.blocks.3.13.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.pooling.att.weight - torch.Size([1, 256])
+[2024-10-03 06:33:56 INFO]: module.class_head.module.1.weight - torch.Size([256, 256, 3])
+[2024-10-03 06:33:56 INFO]: module.class_head.module.1.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.class_head.module.3.weight - torch.Size([1, 256, 3])
+[2024-10-03 06:33:56 INFO]: module.class_head.module.3.bias - torch.Size([1])
+[2024-10-03 06:33:56 INFO]: module.coord_head.module.1.weight - torch.Size([256, 256, 3])
+[2024-10-03 06:33:56 INFO]: module.coord_head.module.1.bias - torch.Size([256])
+[2024-10-03 06:33:56 INFO]: module.coord_head.module.3.weight - torch.Size([2, 256, 3])
+[2024-10-03 06:33:56 INFO]: module.coord_head.module.3.bias - torch.Size([2])
+[2024-10-03 06:33:56 INFO]: Learnable Parameters: 2.705M (100.0%)
+[2024-10-03 06:33:56 INFO]: Auto Scale Batch Size: 1 GPU(s) * 128 Samples
+[2024-10-03 06:33:57 INFO]: Distributed: False, AMP: fp16, Debug: False
+[2024-10-03 06:33:57 INFO]: Launch engine, host: zyq_202324131079@9e64ad59647c, work_dir: work_dirs/r2_tuning_qvhighlights_0
+[2024-10-03 06:33:57 INFO]: Stage: 1, epochs: 30, optimizer: AdamW(lr: 0.0005, weight_decay: 0.0001)
+[2024-10-03 06:39:51 INFO]: Epoch [1][50/226] lr: 4.945e-05, eta: 13:12:04, time: 1.896, data_time: 5.166, memory: 36792, loss_reg: 0.1502, loss_cls: 0.0797, loss_sal: 0.9298, loss_video_cal: 0.5179, loss_layer_cal: 0.1493, loss_motion: 0.0444, loss: 1.8713, grad_norm: 1.8170, scale: 65536.0000
+[2024-10-03 06:43:52 INFO]: Epoch [1][100/226] lr: 9.94e-05, eta: 11:01:06, time: 1.846, data_time: 2.969, memory: 37437, loss_reg: 0.1432, loss_cls: 0.0415, loss_sal: 0.9127, loss_video_cal: 0.5133, loss_layer_cal: 0.1111, loss_motion: 0.0097, loss: 1.7315, grad_norm: 0.7570, scale: 65536.0000
+[2024-10-03 06:47:02 INFO]: Epoch [1][150/226] lr: 0.00015, eta: 9:37:11, time: 1.912, data_time: 1.882, memory: 40057, loss_reg: 0.1421, loss_cls: 0.0411, loss_sal: 0.9007, loss_video_cal: 0.5049, loss_layer_cal: 0.0826, loss_motion: 0.0081, loss: 1.6795, grad_norm: 0.5289, scale: 65536.0000
+[2024-10-03 06:49:49 INFO]: Epoch [1][200/226] lr: 0.0002, eta: 8:41:07, time: 1.920, data_time: 1.417, memory: 40057, loss_reg: 0.1407, loss_cls: 0.0403, loss_sal: 0.8980, loss_video_cal: 0.4967, loss_layer_cal: 0.0548, loss_motion: 0.0088, loss: 1.6393, grad_norm: 0.4481, scale: 65536.0000
+[2024-10-03 06:51:13 INFO]: Epoch [1][226/226] lr: 0.00023, eta: 8:20:03, time: 1.827, data_time: 1.413, memory: 40057, loss_reg: 0.1385, loss_cls: 0.0397, loss_sal: 0.8952, loss_video_cal: 0.4916, loss_layer_cal: 0.0318, loss_motion: 0.0101, loss: 1.6070, grad_norm: 0.4183, scale: 65536.0000
+[2024-10-03 06:51:13 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_1.pth...
+[2024-10-03 06:51:13 INFO]: Validating...
+[2024-10-03 06:54:42 INFO]: Epoch (val) [1][1550] loss_reg: 0.1433, loss_cls: 0.0420, loss_sal: 0.4185, loss_video_cal: 0.0000, loss_layer_cal: 0.0008, loss_motion: 7.4968, loss: 8.1014, MR-full-R1@0.3: 32.8400, MR-full-R1@0.5: 11.4200, MR-full-R1@0.7: 3.0300, MR-full-R5@0.3: 71.9400, MR-full-R5@0.5: 37.6100, MR-full-R5@0.7: 13.8700, MR-full-mAP: 8.2500, MR-full-mAP@0.5: 20.5700, MR-full-mAP@0.75: 5.9600, MR-full-mIoU: 19.4500, MR-long-mAP: 18.2300, MR-long-mIoU: 27.5400, MR-middle-mAP: 4.6400, MR-middle-mIoU: 13.3700, MR-short-mAP: 0.0200, MR-short-mIoU: 6.4500, HL-min-Fair-mAP: 25864.7695, HL-min-Fair-Hit1: 31.4200, HL-min-Good-mAP: 25862.2207, HL-min-Good-Hit1: 29.4800, HL-min-VeryGood-mAP: 25857.3008, HL-min-VeryGood-Hit1: 24.1300, best_MR-full-mAP: 8.2500, best_MR-full-mIoU: 19.4500, best_HL-min-VeryGood-mAP: 25857.3008, best_MR-full-R1@0.3: 32.8400, best_MR-full-R1@0.5: 11.4200, best_MR-full-R1@0.7: 3.0300
+[2024-10-03 06:57:43 INFO]: Epoch [2][50/226] lr: 0.00028, eta: 9:19:45, time: 1.925, data_time: 2.118, memory: 40057, loss_reg: 0.1389, loss_cls: 0.0405, loss_sal: 0.8909, loss_video_cal: 0.4832, loss_layer_cal: 0.0203, loss_motion: 0.0099, loss: 1.5837, grad_norm: 0.4641, scale: 65536.0000
+[2024-10-03 07:00:30 INFO]: Epoch [2][100/226] lr: 0.00033, eta: 8:45:18, time: 1.897, data_time: 1.440, memory: 40057, loss_reg: 0.1363, loss_cls: 0.0407, loss_sal: 0.8745, loss_video_cal: 0.4634, loss_layer_cal: 0.0159, loss_motion: 0.0115, loss: 1.5423, grad_norm: 0.6264, scale: 65536.0000
+[2024-10-03 07:07:08 INFO]: Epoch [2][150/226] lr: 0.00038, eta: 9:24:46, time: 1.943, data_time: 6.008, memory: 40057, loss_reg: 0.1328, loss_cls: 0.0381, loss_sal: 0.8566, loss_video_cal: 0.4477, loss_layer_cal: 0.0149, loss_motion: 0.0125, loss: 1.5026, grad_norm: 0.7321, scale: 65536.0000
+[2024-10-03 07:11:13 INFO]: Epoch [2][200/226] lr: 0.00043, eta: 9:15:30, time: 1.924, data_time: 2.976, memory: 40057, loss_reg: 0.1266, loss_cls: 0.0386, loss_sal: 0.8452, loss_video_cal: 0.4339, loss_layer_cal: 0.0144, loss_motion: 0.0127, loss: 1.4713, grad_norm: 0.7580, scale: 65536.0000
+[2024-10-03 07:12:58 INFO]: Epoch [2][226/226] lr: 0.00045, eta: 9:06:01, time: 1.907, data_time: 2.150, memory: 40057, loss_reg: 0.1238, loss_cls: 0.0367, loss_sal: 0.8395, loss_video_cal: 0.4209, loss_layer_cal: 0.0143, loss_motion: 0.0134, loss: 1.4486, grad_norm: 0.7457, scale: 65536.0000
+[2024-10-03 07:12:58 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_2.pth...
+[2024-10-03 07:12:59 INFO]: Validating...
+[2024-10-03 07:16:31 INFO]: Epoch (val) [2][1550] loss_reg: 0.1214, loss_cls: 0.0388, loss_sal: 0.3830, loss_video_cal: 0.0000, loss_layer_cal: 0.0005, loss_motion: 5.4426, loss: 5.9862, MR-full-R1@0.3: 58.0600, MR-full-R1@0.5: 38.9700, MR-full-R1@0.7: 20.4500, MR-full-R5@0.3: 87.5500, MR-full-R5@0.5: 66.9700, MR-full-R5@0.7: 44.5200, MR-full-mAP: 23.6600, MR-full-mAP@0.5: 45.2100, MR-full-mAP@0.75: 23.3700, MR-full-mIoU: 38.3900, MR-long-mAP: 36.7200, MR-long-mIoU: 48.4500, MR-middle-mAP: 20.7000, MR-middle-mIoU: 31.3600, MR-short-mAP: 1.7600, MR-short-mIoU: 8.5000, HL-min-Fair-mAP: 25869.2500, HL-min-Fair-Hit1: 53.8700, HL-min-Good-mAP: 25866.1699, HL-min-Good-Hit1: 51.5500, HL-min-VeryGood-mAP: 25859.7891, HL-min-VeryGood-Hit1: 42.0000, best_MR-full-mAP: 23.6600, best_MR-full-mIoU: 38.3900, best_HL-min-VeryGood-mAP: 25859.7891, best_MR-full-R1@0.3: 58.0600, best_MR-full-R1@0.5: 38.9700, best_MR-full-R1@0.7: 20.4500
+[2024-10-03 07:19:37 INFO]: Epoch [3][50/226] lr: 0.0005, eta: 9:30:47, time: 1.925, data_time: 2.193, memory: 40057, loss_reg: 0.1194, loss_cls: 0.0363, loss_sal: 0.8268, loss_video_cal: 0.4104, loss_layer_cal: 0.0148, loss_motion: 0.0145, loss: 1.4222, grad_norm: 0.7746, scale: 65536.0000
+[2024-10-03 07:22:24 INFO]: Epoch [3][100/226] lr: 0.0005, eta: 9:06:27, time: 1.922, data_time: 1.429, memory: 40057, loss_reg: 0.1176, loss_cls: 0.0362, loss_sal: 0.8209, loss_video_cal: 0.4015, loss_layer_cal: 0.0160, loss_motion: 0.0150, loss: 1.4071, grad_norm: 0.7809, scale: 65536.0000
+[2024-10-03 07:25:13 INFO]: Epoch [3][150/226] lr: 0.0005, eta: 8:45:56, time: 1.911, data_time: 1.468, memory: 40057, loss_reg: 0.1152, loss_cls: 0.0359, loss_sal: 0.8056, loss_video_cal: 0.3916, loss_layer_cal: 0.0162, loss_motion: 0.0163, loss: 1.3808, grad_norm: 0.8076, scale: 65536.0000
+[2024-10-03 07:28:02 INFO]: Epoch [3][200/226] lr: 0.0005, eta: 8:28:08, time: 1.927, data_time: 1.452, memory: 40057, loss_reg: 0.1125, loss_cls: 0.0342, loss_sal: 0.7954, loss_video_cal: 0.3856, loss_layer_cal: 0.0164, loss_motion: 0.0168, loss: 1.3608, grad_norm: 0.8190, scale: 65536.0000
+[2024-10-03 07:29:26 INFO]: Epoch [3][226/226] lr: 0.0005, eta: 8:19:16, time: 1.857, data_time: 1.399, memory: 40057, loss_reg: 0.1127, loss_cls: 0.0346, loss_sal: 0.7860, loss_video_cal: 0.3789, loss_layer_cal: 0.0168, loss_motion: 0.0175, loss: 1.3465, grad_norm: 0.8308, scale: 65536.0000
+[2024-10-03 07:29:27 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_3.pth...
+[2024-10-03 07:29:27 INFO]: Validating...
+[2024-10-03 07:31:06 INFO]: Epoch (val) [3][1550] loss_reg: 0.1093, loss_cls: 0.0363, loss_sal: 0.3599, loss_video_cal: 0.0000, loss_layer_cal: 0.0009, loss_motion: 4.7300, loss: 5.2364, MR-full-R1@0.3: 67.2900, MR-full-R1@0.5: 50.9700, MR-full-R1@0.7: 32.2600, MR-full-R5@0.3: 90.1300, MR-full-R5@0.5: 79.4200, MR-full-R5@0.7: 59.4200, MR-full-mAP: 32.6300, MR-full-mAP@0.5: 54.5600, MR-full-mAP@0.75: 33.4000, MR-full-mIoU: 47.4800, MR-long-mAP: 39.8800, MR-long-mIoU: 52.8100, MR-middle-mAP: 34.6100, MR-middle-mIoU: 42.4800, MR-short-mAP: 4.3900, MR-short-mIoU: 10.3800, HL-min-Fair-mAP: 25872.1602, HL-min-Fair-Hit1: 67.1000, HL-min-Good-mAP: 25868.7305, HL-min-Good-Hit1: 65.0300, HL-min-VeryGood-mAP: 25861.3594, HL-min-VeryGood-Hit1: 53.4800, best_MR-full-mAP: 32.6300, best_MR-full-mIoU: 47.4800, best_HL-min-VeryGood-mAP: 25861.3594, best_MR-full-R1@0.3: 67.2900, best_MR-full-R1@0.5: 50.9700, best_MR-full-R1@0.7: 32.2600
+[2024-10-03 07:34:08 INFO]: Epoch [4][50/226] lr: 0.0005, eta: 8:20:07, time: 1.955, data_time: 2.091, memory: 40057, loss_reg: 0.1100, loss_cls: 0.0340, loss_sal: 0.7806, loss_video_cal: 0.3749, loss_layer_cal: 0.0168, loss_motion: 0.0175, loss: 1.3339, grad_norm: 0.8397, scale: 65536.0000
+[2024-10-03 07:36:56 INFO]: Epoch [4][100/226] lr: 0.0005, eta: 8:05:49, time: 1.924, data_time: 1.451, memory: 40057, loss_reg: 0.1075, loss_cls: 0.0336, loss_sal: 0.7669, loss_video_cal: 0.3719, loss_layer_cal: 0.0169, loss_motion: 0.0177, loss: 1.3143, grad_norm: 0.8624, scale: 65536.0000
+[2024-10-03 07:39:47 INFO]: Epoch [4][150/226] lr: 0.0005, eta: 7:53:02, time: 1.942, data_time: 1.458, memory: 40057, loss_reg: 0.1078, loss_cls: 0.0318, loss_sal: 0.7591, loss_video_cal: 0.3681, loss_layer_cal: 0.0173, loss_motion: 0.0178, loss: 1.3020, grad_norm: 0.8519, scale: 65536.0000
+[2024-10-03 07:42:37 INFO]: Epoch [4][200/226] lr: 0.0005, eta: 7:41:25, time: 1.947, data_time: 1.457, memory: 40057, loss_reg: 0.1061, loss_cls: 0.0328, loss_sal: 0.7596, loss_video_cal: 0.3667, loss_layer_cal: 0.0170, loss_motion: 0.0178, loss: 1.3000, grad_norm: 0.8397, scale: 65536.0000
+[2024-10-03 07:44:03 INFO]: Epoch [4][226/226] lr: 0.0005, eta: 7:35:35, time: 1.868, data_time: 1.472, memory: 40057, loss_reg: 0.1057, loss_cls: 0.0322, loss_sal: 0.7527, loss_video_cal: 0.3655, loss_layer_cal: 0.0172, loss_motion: 0.0170, loss: 1.2903, grad_norm: 0.8125, scale: 65536.0000
+[2024-10-03 07:44:04 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_4.pth...
+[2024-10-03 07:44:04 INFO]: Validating...
+[2024-10-03 07:45:39 INFO]: Epoch (val) [4][1550] loss_reg: 0.1033, loss_cls: 0.0354, loss_sal: 0.3454, loss_video_cal: 0.0000, loss_layer_cal: 0.0011, loss_motion: 4.3723, loss: 4.8575, MR-full-R1@0.3: 71.5500, MR-full-R1@0.5: 56.5800, MR-full-R1@0.7: 38.8400, MR-full-R5@0.3: 90.6500, MR-full-R5@0.5: 80.6500, MR-full-R5@0.7: 62.7100, MR-full-mAP: 36.1400, MR-full-mAP@0.5: 58.3600, MR-full-mAP@0.75: 37.6600, MR-full-mIoU: 51.8100, MR-long-mAP: 40.6500, MR-long-mIoU: 53.9800, MR-middle-mAP: 39.5900, MR-middle-mIoU: 47.8900, MR-short-mAP: 6.3900, MR-short-mIoU: 12.3000, HL-min-Fair-mAP: 25873.4004, HL-min-Fair-Hit1: 71.1000, HL-min-Good-mAP: 25869.8203, HL-min-Good-Hit1: 68.9700, HL-min-VeryGood-mAP: 25862.0508, HL-min-VeryGood-Hit1: 56.4500, best_MR-full-mAP: 36.1400, best_MR-full-mIoU: 51.8100, best_HL-min-VeryGood-mAP: 25862.0508, best_MR-full-R1@0.3: 71.5500, best_MR-full-R1@0.5: 56.5800, best_MR-full-R1@0.7: 38.8400
+[2024-10-03 07:48:41 INFO]: Epoch [5][50/226] lr: 0.0005, eta: 7:36:18, time: 1.956, data_time: 2.089, memory: 40057, loss_reg: 0.1037, loss_cls: 0.0313, loss_sal: 0.7424, loss_video_cal: 0.3621, loss_layer_cal: 0.0172, loss_motion: 0.0178, loss: 1.2744, grad_norm: 0.8528, scale: 65536.0000
+[2024-10-03 07:51:30 INFO]: Epoch [5][100/226] lr: 0.0005, eta: 7:26:00, time: 1.947, data_time: 1.421, memory: 40057, loss_reg: 0.1041, loss_cls: 0.0318, loss_sal: 0.7388, loss_video_cal: 0.3587, loss_layer_cal: 0.0176, loss_motion: 0.0179, loss: 1.2689, grad_norm: 0.8925, scale: 65536.0000
+[2024-10-03 07:54:16 INFO]: Epoch [5][150/226] lr: 0.0005, eta: 7:16:14, time: 1.901, data_time: 1.426, memory: 40057, loss_reg: 0.1023, loss_cls: 0.0313, loss_sal: 0.7376, loss_video_cal: 0.3568, loss_layer_cal: 0.0179, loss_motion: 0.0179, loss: 1.2638, grad_norm: 0.8597, scale: 65536.0000
+[2024-10-03 07:57:06 INFO]: Epoch [5][200/226] lr: 0.0005, eta: 7:07:24, time: 1.965, data_time: 1.436, memory: 40057, loss_reg: 0.1005, loss_cls: 0.0302, loss_sal: 0.7326, loss_video_cal: 0.3556, loss_layer_cal: 0.0176, loss_motion: 0.0179, loss: 1.2545, grad_norm: 0.8318, scale: 65536.0000
+[2024-10-03 07:58:32 INFO]: Epoch [5][226/226] lr: 0.0005, eta: 7:02:51, time: 1.885, data_time: 1.436, memory: 40057, loss_reg: 0.1001, loss_cls: 0.0313, loss_sal: 0.7298, loss_video_cal: 0.3553, loss_layer_cal: 0.0176, loss_motion: 0.0183, loss: 1.2525, grad_norm: 0.8699, scale: 65536.0000
+[2024-10-03 07:58:33 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_5.pth...
+[2024-10-03 07:58:33 INFO]: Validating...
+[2024-10-03 08:02:10 INFO]: Epoch (val) [5][1550] loss_reg: 0.0993, loss_cls: 0.0344, loss_sal: 0.3400, loss_video_cal: 0.0000, loss_layer_cal: 0.0013, loss_motion: 4.1083, loss: 4.5833, MR-full-R1@0.3: 72.0600, MR-full-R1@0.5: 59.4200, MR-full-R1@0.7: 42.7100, MR-full-R5@0.3: 89.8700, MR-full-R5@0.5: 81.1000, MR-full-R5@0.7: 63.7400, MR-full-mAP: 38.2800, MR-full-mAP@0.5: 61.1500, MR-full-mAP@0.75: 40.6300, MR-full-mIoU: 53.5700, MR-long-mAP: 43.3100, MR-long-mIoU: 55.6800, MR-middle-mAP: 39.9900, MR-middle-mIoU: 48.6600, MR-short-mAP: 9.3700, MR-short-mIoU: 14.4400, HL-min-Fair-mAP: 25873.8496, HL-min-Fair-Hit1: 72.1300, HL-min-Good-mAP: 25870.2402, HL-min-Good-Hit1: 69.6800, HL-min-VeryGood-mAP: 25862.3203, HL-min-VeryGood-Hit1: 58.5200, best_MR-full-mAP: 38.2800, best_MR-full-mIoU: 53.5700, best_HL-min-VeryGood-mAP: 25862.3203, best_MR-full-R1@0.3: 72.0600, best_MR-full-R1@0.5: 59.4200, best_MR-full-R1@0.7: 42.7100
+[2024-10-03 08:05:20 INFO]: Epoch [6][50/226] lr: 0.0005, eta: 7:13:34, time: 2.040, data_time: 2.157, memory: 40057, loss_reg: 0.0999, loss_cls: 0.0306, loss_sal: 0.7239, loss_video_cal: 0.3555, loss_layer_cal: 0.0180, loss_motion: 0.0180, loss: 1.2460, grad_norm: 0.8806, scale: 65536.0000
+[2024-10-03 08:08:16 INFO]: Epoch [6][100/226] lr: 0.0005, eta: 7:05:28, time: 2.047, data_time: 1.474, memory: 40057, loss_reg: 0.0995, loss_cls: 0.0305, loss_sal: 0.7217, loss_video_cal: 0.3514, loss_layer_cal: 0.0181, loss_motion: 0.0178, loss: 1.2390, grad_norm: 0.8687, scale: 65536.0000
+[2024-10-03 08:11:06 INFO]: Epoch [6][150/226] lr: 0.0005, eta: 6:57:20, time: 1.949, data_time: 1.449, memory: 40057, loss_reg: 0.0981, loss_cls: 0.0299, loss_sal: 0.7183, loss_video_cal: 0.3497, loss_layer_cal: 0.0181, loss_motion: 0.0183, loss: 1.2324, grad_norm: 0.8864, scale: 65536.0000
+[2024-10-03 08:13:53 INFO]: Epoch [6][200/226] lr: 0.0005, eta: 6:49:23, time: 1.916, data_time: 1.420, memory: 40057, loss_reg: 0.0996, loss_cls: 0.0295, loss_sal: 0.7155, loss_video_cal: 0.3480, loss_layer_cal: 0.0184, loss_motion: 0.0182, loss: 1.2292, grad_norm: 0.8901, scale: 65536.0000
+[2024-10-03 08:15:18 INFO]: Epoch [6][226/226] lr: 0.0005, eta: 6:45:21, time: 1.868, data_time: 1.437, memory: 40057, loss_reg: 0.0991, loss_cls: 0.0299, loss_sal: 0.7127, loss_video_cal: 0.3480, loss_layer_cal: 0.0184, loss_motion: 0.0186, loss: 1.2267, grad_norm: 0.8270, scale: 65536.0000
+[2024-10-03 08:15:19 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_6.pth...
+[2024-10-03 08:15:19 INFO]: Validating...
+[2024-10-03 08:17:06 INFO]: Epoch (val) [6][1550] loss_reg: 0.0955, loss_cls: 0.0329, loss_sal: 0.3432, loss_video_cal: 0.0000, loss_layer_cal: 0.0014, loss_motion: 4.0229, loss: 4.4960, MR-full-R1@0.3: 75.4800, MR-full-R1@0.5: 61.6100, MR-full-R1@0.7: 43.2900, MR-full-R5@0.3: 91.9400, MR-full-R5@0.5: 84.6500, MR-full-R5@0.7: 68.7100, MR-full-mAP: 40.9300, MR-full-mAP@0.5: 63.2000, MR-full-mAP@0.75: 43.0100, MR-full-mIoU: 55.8900, MR-long-mAP: 46.4600, MR-long-mIoU: 57.6600, MR-middle-mAP: 44.0400, MR-middle-mIoU: 52.2000, MR-short-mAP: 8.1700, MR-short-mIoU: 12.6300, HL-min-Fair-mAP: 25874.1797, HL-min-Fair-Hit1: 75.0300, HL-min-Good-mAP: 25870.5293, HL-min-Good-Hit1: 72.1900, HL-min-VeryGood-mAP: 25862.5000, HL-min-VeryGood-Hit1: 60.0000, best_MR-full-mAP: 40.9300, best_MR-full-mIoU: 55.8900, best_HL-min-VeryGood-mAP: 25862.5000, best_MR-full-R1@0.3: 75.4800, best_MR-full-R1@0.5: 61.6100, best_MR-full-R1@0.7: 43.2900
+[2024-10-03 08:20:07 INFO]: Epoch [7][50/226] lr: 0.0005, eta: 6:45:41, time: 1.952, data_time: 2.089, memory: 40057, loss_reg: 0.0960, loss_cls: 0.0298, loss_sal: 0.7103, loss_video_cal: 0.3485, loss_layer_cal: 0.0184, loss_motion: 0.0177, loss: 1.2207, grad_norm: 0.8550, scale: 65536.0000
+[2024-10-03 08:22:54 INFO]: Epoch [7][100/226] lr: 0.0005, eta: 6:38:17, time: 1.921, data_time: 1.416, memory: 40057, loss_reg: 0.0945, loss_cls: 0.0290, loss_sal: 0.7023, loss_video_cal: 0.3471, loss_layer_cal: 0.0185, loss_motion: 0.0183, loss: 1.2095, grad_norm: 0.8540, scale: 65536.0000
+[2024-10-03 08:25:42 INFO]: Epoch [7][150/226] lr: 0.0005, eta: 6:31:16, time: 1.927, data_time: 1.439, memory: 40057, loss_reg: 0.0964, loss_cls: 0.0293, loss_sal: 0.7120, loss_video_cal: 0.3449, loss_layer_cal: 0.0187, loss_motion: 0.0181, loss: 1.2193, grad_norm: 0.8590, scale: 65536.0000
+[2024-10-03 08:28:30 INFO]: Epoch [7][200/226] lr: 0.0005, eta: 6:24:31, time: 1.915, data_time: 1.451, memory: 40057, loss_reg: 0.0962, loss_cls: 0.0291, loss_sal: 0.7065, loss_video_cal: 0.3463, loss_layer_cal: 0.0188, loss_motion: 0.0184, loss: 1.2152, grad_norm: 0.8629, scale: 65536.0000
+[2024-10-03 08:29:53 INFO]: Epoch [7][226/226] lr: 0.0005, eta: 6:20:53, time: 1.836, data_time: 1.378, memory: 40057, loss_reg: 0.0943, loss_cls: 0.0286, loss_sal: 0.6931, loss_video_cal: 0.3422, loss_layer_cal: 0.0187, loss_motion: 0.0178, loss: 1.1947, grad_norm: 0.8617, scale: 65536.0000
+[2024-10-03 08:29:54 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_7.pth...
+[2024-10-03 08:29:54 INFO]: Validating...
+[2024-10-03 08:31:34 INFO]: Epoch (val) [7][1550] loss_reg: 0.0922, loss_cls: 0.0323, loss_sal: 0.3356, loss_video_cal: 0.0000, loss_layer_cal: 0.0015, loss_motion: 3.8480, loss: 4.3095, MR-full-R1@0.3: 75.6100, MR-full-R1@0.5: 63.7400, MR-full-R1@0.7: 45.6100, MR-full-R5@0.3: 93.2300, MR-full-R5@0.5: 85.5500, MR-full-R5@0.7: 69.7400, MR-full-mAP: 43.6900, MR-full-mAP@0.5: 65.3900, MR-full-mAP@0.75: 44.9600, MR-full-mIoU: 57.7800, MR-long-mAP: 49.7300, MR-long-mIoU: 60.7700, MR-middle-mAP: 45.4700, MR-middle-mIoU: 53.0400, MR-short-mAP: 10.2100, MR-short-mIoU: 13.3000, HL-min-Fair-mAP: 25874.3594, HL-min-Fair-Hit1: 75.2900, HL-min-Good-mAP: 25870.7500, HL-min-Good-Hit1: 72.9000, HL-min-VeryGood-mAP: 25862.7207, HL-min-VeryGood-Hit1: 60.5800, best_MR-full-mAP: 43.6900, best_MR-full-mIoU: 57.7800, best_HL-min-VeryGood-mAP: 25862.7207, best_MR-full-R1@0.3: 75.6100, best_MR-full-R1@0.5: 63.7400, best_MR-full-R1@0.7: 45.6100
+[2024-10-03 08:34:36 INFO]: Epoch [8][50/226] lr: 0.0005, eta: 6:20:32, time: 1.964, data_time: 2.109, memory: 40057, loss_reg: 0.0928, loss_cls: 0.0287, loss_sal: 0.6997, loss_video_cal: 0.3428, loss_layer_cal: 0.0190, loss_motion: 0.0182, loss: 1.2011, grad_norm: 0.8677, scale: 65536.0000
+[2024-10-03 08:37:23 INFO]: Epoch [8][100/226] lr: 0.0005, eta: 6:14:04, time: 1.919, data_time: 1.417, memory: 40057, loss_reg: 0.0939, loss_cls: 0.0291, loss_sal: 0.7006, loss_video_cal: 0.3424, loss_layer_cal: 0.0191, loss_motion: 0.0185, loss: 1.2036, grad_norm: 0.8696, scale: 65536.0000
+[2024-10-03 08:40:11 INFO]: Epoch [8][150/226] lr: 0.0005, eta: 6:07:50, time: 1.933, data_time: 1.419, memory: 40057, loss_reg: 0.0937, loss_cls: 0.0286, loss_sal: 0.6946, loss_video_cal: 0.3399, loss_layer_cal: 0.0190, loss_motion: 0.0184, loss: 1.1941, grad_norm: 0.8956, scale: 65536.0000
+[2024-10-03 08:42:59 INFO]: Epoch [8][200/226] lr: 0.0005, eta: 6:01:52, time: 1.930, data_time: 1.445, memory: 40057, loss_reg: 0.0923, loss_cls: 0.0285, loss_sal: 0.6927, loss_video_cal: 0.3416, loss_layer_cal: 0.0191, loss_motion: 0.0186, loss: 1.1929, grad_norm: 0.8776, scale: 65536.0000
+[2024-10-03 08:44:26 INFO]: Epoch [8][226/226] lr: 0.0005, eta: 5:58:48, time: 1.907, data_time: 1.440, memory: 40057, loss_reg: 0.0925, loss_cls: 0.0279, loss_sal: 0.6922, loss_video_cal: 0.3388, loss_layer_cal: 0.0194, loss_motion: 0.0184, loss: 1.1892, grad_norm: 0.8834, scale: 65536.0000
+[2024-10-03 08:44:26 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_8.pth...
+[2024-10-03 08:44:27 INFO]: Validating...
+[2024-10-03 08:46:13 INFO]: Epoch (val) [8][1550] loss_reg: 0.0927, loss_cls: 0.0317, loss_sal: 0.3323, loss_video_cal: 0.0000, loss_layer_cal: 0.0016, loss_motion: 3.7996, loss: 4.2579, MR-full-R1@0.3: 76.0000, MR-full-R1@0.5: 63.8100, MR-full-R1@0.7: 45.9400, MR-full-R5@0.3: 93.9400, MR-full-R5@0.5: 86.4500, MR-full-R5@0.7: 71.8700, MR-full-mAP: 43.5400, MR-full-mAP@0.5: 65.4700, MR-full-mAP@0.75: 44.6900, MR-full-mIoU: 57.5400, MR-long-mAP: 50.7000, MR-long-mIoU: 59.7000, MR-middle-mAP: 45.4200, MR-middle-mIoU: 53.0800, MR-short-mAP: 9.4900, MR-short-mIoU: 13.9900, HL-min-Fair-mAP: 25874.7109, HL-min-Fair-Hit1: 76.1300, HL-min-Good-mAP: 25871.0293, HL-min-Good-Hit1: 73.7400, HL-min-VeryGood-mAP: 25862.8301, HL-min-VeryGood-Hit1: 61.5500, best_MR-full-mAP: 43.6900, best_MR-full-mIoU: 57.7800, best_HL-min-VeryGood-mAP: 25862.8301, best_MR-full-R1@0.3: 76.0000, best_MR-full-R1@0.5: 63.8100, best_MR-full-R1@0.7: 45.9400
+[2024-10-03 08:49:16 INFO]: Epoch [9][50/226] lr: 0.0005, eta: 5:58:24, time: 1.940, data_time: 2.092, memory: 40057, loss_reg: 0.0908, loss_cls: 0.0284, loss_sal: 0.6871, loss_video_cal: 0.3385, loss_layer_cal: 0.0190, loss_motion: 0.0186, loss: 1.1825, grad_norm: 0.8807, scale: 65536.0000
+[2024-10-03 08:52:04 INFO]: Epoch [9][100/226] lr: 0.0005, eta: 5:52:37, time: 1.924, data_time: 1.440, memory: 40057, loss_reg: 0.0908, loss_cls: 0.0277, loss_sal: 0.6882, loss_video_cal: 0.3395, loss_layer_cal: 0.0194, loss_motion: 0.0183, loss: 1.1838, grad_norm: 0.8902, scale: 65536.0000
+[2024-10-03 08:54:53 INFO]: Epoch [9][150/226] lr: 0.0005, eta: 5:47:01, time: 1.938, data_time: 1.435, memory: 40057, loss_reg: 0.0893, loss_cls: 0.0283, loss_sal: 0.6884, loss_video_cal: 0.3394, loss_layer_cal: 0.0193, loss_motion: 0.0190, loss: 1.1836, grad_norm: 0.8744, scale: 65536.0000
+[2024-10-03 08:57:42 INFO]: Epoch [9][200/226] lr: 0.0005, eta: 5:41:35, time: 1.959, data_time: 1.432, memory: 40057, loss_reg: 0.0901, loss_cls: 0.0283, loss_sal: 0.6890, loss_video_cal: 0.3383, loss_layer_cal: 0.0193, loss_motion: 0.0184, loss: 1.1834, grad_norm: 0.8468, scale: 76021.7578
+[2024-10-03 08:59:10 INFO]: Epoch [9][226/226] lr: 0.0005, eta: 5:38:47, time: 1.877, data_time: 1.485, memory: 40057, loss_reg: 0.0916, loss_cls: 0.0277, loss_sal: 0.6882, loss_video_cal: 0.3371, loss_layer_cal: 0.0195, loss_motion: 0.0182, loss: 1.1823, grad_norm: 0.9093, scale: 131072.0000
+[2024-10-03 08:59:10 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_9.pth...
+[2024-10-03 08:59:10 INFO]: Validating...
+[2024-10-03 09:02:04 INFO]: Epoch (val) [9][1550] loss_reg: 0.0903, loss_cls: 0.0318, loss_sal: 0.3345, loss_video_cal: 0.0000, loss_layer_cal: 0.0018, loss_motion: 3.6335, loss: 4.0918, MR-full-R1@0.3: 75.1000, MR-full-R1@0.5: 63.4200, MR-full-R1@0.7: 46.8400, MR-full-R5@0.3: 93.2300, MR-full-R5@0.5: 85.9400, MR-full-R5@0.7: 71.2300, MR-full-mAP: 43.4300, MR-full-mAP@0.5: 65.2400, MR-full-mAP@0.75: 45.3100, MR-full-mIoU: 57.0800, MR-long-mAP: 49.5800, MR-long-mIoU: 60.2900, MR-middle-mAP: 45.5900, MR-middle-mIoU: 51.9000, MR-short-mAP: 9.9700, MR-short-mIoU: 13.9400, HL-min-Fair-mAP: 25874.6895, HL-min-Fair-Hit1: 75.8700, HL-min-Good-mAP: 25870.9902, HL-min-Good-Hit1: 73.7400, HL-min-VeryGood-mAP: 25862.8203, HL-min-VeryGood-Hit1: 61.5500, best_MR-full-mAP: 43.6900, best_MR-full-mIoU: 57.7800, best_HL-min-VeryGood-mAP: 25862.8301, best_MR-full-R1@0.3: 76.0000, best_MR-full-R1@0.5: 63.8100, best_MR-full-R1@0.7: 46.8400
+[2024-10-03 09:05:07 INFO]: Epoch [10][50/226] lr: 0.0005, eta: 5:40:36, time: 1.944, data_time: 2.150, memory: 40057, loss_reg: 0.0893, loss_cls: 0.0269, loss_sal: 0.6829, loss_video_cal: 0.3359, loss_layer_cal: 0.0195, loss_motion: 0.0188, loss: 1.1734, grad_norm: 0.8744, scale: 131072.0000
+[2024-10-03 09:07:56 INFO]: Epoch [10][100/226] lr: 0.0005, eta: 5:35:11, time: 1.918, data_time: 1.443, memory: 40057, loss_reg: 0.0892, loss_cls: 0.0281, loss_sal: 0.6816, loss_video_cal: 0.3345, loss_layer_cal: 0.0197, loss_motion: 0.0188, loss: 1.1718, grad_norm: 0.8897, scale: 131072.0000
+[2024-10-03 09:10:46 INFO]: Epoch [10][150/226] lr: 0.0005, eta: 5:29:58, time: 1.950, data_time: 1.462, memory: 40057, loss_reg: 0.0889, loss_cls: 0.0270, loss_sal: 0.6816, loss_video_cal: 0.3337, loss_layer_cal: 0.0199, loss_motion: 0.0185, loss: 1.1696, grad_norm: 0.8432, scale: 131072.0000
+[2024-10-03 09:13:32 INFO]: Epoch [10][200/226] lr: 0.0005, eta: 5:24:42, time: 1.902, data_time: 1.422, memory: 40057, loss_reg: 0.0878, loss_cls: 0.0277, loss_sal: 0.6754, loss_video_cal: 0.3346, loss_layer_cal: 0.0197, loss_motion: 0.0190, loss: 1.1642, grad_norm: 0.8458, scale: 131072.0000
+[2024-10-03 09:14:58 INFO]: Epoch [10][226/226] lr: 0.0005, eta: 5:22:00, time: 1.871, data_time: 1.442, memory: 40057, loss_reg: 0.0874, loss_cls: 0.0280, loss_sal: 0.6863, loss_video_cal: 0.3356, loss_layer_cal: 0.0196, loss_motion: 0.0184, loss: 1.1753, grad_norm: 0.8579, scale: 131072.0000
+[2024-10-03 09:14:59 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_10.pth...
+[2024-10-03 09:14:59 INFO]: Validating...
+[2024-10-03 09:17:11 INFO]: Epoch (val) [10][1550] loss_reg: 0.0919, loss_cls: 0.0328, loss_sal: 0.3357, loss_video_cal: 0.0000, loss_layer_cal: 0.0018, loss_motion: 3.5289, loss: 3.9912, MR-full-R1@0.3: 76.1300, MR-full-R1@0.5: 64.7100, MR-full-R1@0.7: 47.4800, MR-full-R5@0.3: 92.0000, MR-full-R5@0.5: 85.1600, MR-full-R5@0.7: 69.9400, MR-full-mAP: 43.5700, MR-full-mAP@0.5: 65.3300, MR-full-mAP@0.75: 45.8600, MR-full-mIoU: 58.4100, MR-long-mAP: 46.0300, MR-long-mIoU: 56.8200, MR-middle-mAP: 47.3900, MR-middle-mIoU: 55.3400, MR-short-mAP: 11.7400, MR-short-mIoU: 15.6500, HL-min-Fair-mAP: 25874.6406, HL-min-Fair-Hit1: 76.3200, HL-min-Good-mAP: 25870.9707, HL-min-Good-Hit1: 74.1300, HL-min-VeryGood-mAP: 25862.8906, HL-min-VeryGood-Hit1: 61.8100, best_MR-full-mAP: 43.6900, best_MR-full-mIoU: 58.4100, best_HL-min-VeryGood-mAP: 25862.8906, best_MR-full-R1@0.3: 76.1300, best_MR-full-R1@0.5: 64.7100, best_MR-full-R1@0.7: 47.4800
+[2024-10-03 09:20:14 INFO]: Epoch [11][50/226] lr: 0.0005, eta: 5:21:44, time: 1.938, data_time: 2.135, memory: 40057, loss_reg: 0.0855, loss_cls: 0.0266, loss_sal: 0.6740, loss_video_cal: 0.3335, loss_layer_cal: 0.0195, loss_motion: 0.0185, loss: 1.1575, grad_norm: 0.8404, scale: 131072.0000
+[2024-10-03 09:23:03 INFO]: Epoch [11][100/226] lr: 0.0005, eta: 5:16:40, time: 1.947, data_time: 1.437, memory: 40057, loss_reg: 0.0883, loss_cls: 0.0276, loss_sal: 0.6775, loss_video_cal: 0.3318, loss_layer_cal: 0.0196, loss_motion: 0.0192, loss: 1.1639, grad_norm: 0.8838, scale: 131072.0000
+[2024-10-03 09:25:52 INFO]: Epoch [11][150/226] lr: 0.0005, eta: 5:11:41, time: 1.925, data_time: 1.443, memory: 40057, loss_reg: 0.0875, loss_cls: 0.0272, loss_sal: 0.6757, loss_video_cal: 0.3342, loss_layer_cal: 0.0197, loss_motion: 0.0187, loss: 1.1630, grad_norm: 0.8443, scale: 131072.0000
+[2024-10-03 09:28:40 INFO]: Epoch [11][200/226] lr: 0.0005, eta: 5:06:47, time: 1.925, data_time: 1.447, memory: 40057, loss_reg: 0.0865, loss_cls: 0.0264, loss_sal: 0.6733, loss_video_cal: 0.3332, loss_layer_cal: 0.0196, loss_motion: 0.0186, loss: 1.1576, grad_norm: 0.8681, scale: 131072.0000
+[2024-10-03 09:30:06 INFO]: Epoch [11][226/226] lr: 0.0005, eta: 5:04:14, time: 1.882, data_time: 1.436, memory: 40057, loss_reg: 0.0880, loss_cls: 0.0271, loss_sal: 0.6771, loss_video_cal: 0.3314, loss_layer_cal: 0.0192, loss_motion: 0.0189, loss: 1.1617, grad_norm: 0.8629, scale: 131072.0000
+[2024-10-03 09:30:06 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_11.pth...
+[2024-10-03 09:30:07 INFO]: Validating...
+[2024-10-03 09:31:49 INFO]: Epoch (val) [11][1550] loss_reg: 0.0939, loss_cls: 0.0323, loss_sal: 0.3303, loss_video_cal: 0.0000, loss_layer_cal: 0.0019, loss_motion: 3.4488, loss: 3.9071, MR-full-R1@0.3: 76.9000, MR-full-R1@0.5: 66.1300, MR-full-R1@0.7: 47.2900, MR-full-R5@0.3: 93.1600, MR-full-R5@0.5: 85.9400, MR-full-R5@0.7: 69.8700, MR-full-mAP: 42.9400, MR-full-mAP@0.5: 65.9800, MR-full-mAP@0.75: 45.0300, MR-full-mIoU: 58.2100, MR-long-mAP: 46.3000, MR-long-mIoU: 58.3400, MR-middle-mAP: 47.2400, MR-middle-mIoU: 54.9000, MR-short-mAP: 10.0600, MR-short-mIoU: 13.7900, HL-min-Fair-mAP: 25874.7402, HL-min-Fair-Hit1: 76.7100, HL-min-Good-mAP: 25871.0898, HL-min-Good-Hit1: 74.4500, HL-min-VeryGood-mAP: 25862.8594, HL-min-VeryGood-Hit1: 62.3200, best_MR-full-mAP: 43.6900, best_MR-full-mIoU: 58.4100, best_HL-min-VeryGood-mAP: 25862.8906, best_MR-full-R1@0.3: 76.9000, best_MR-full-R1@0.5: 66.1300, best_MR-full-R1@0.7: 47.4800
+[2024-10-03 09:34:57 INFO]: Epoch [12][50/226] lr: 0.0005, eta: 5:02:51, time: 1.991, data_time: 2.189, memory: 40057, loss_reg: 0.0865, loss_cls: 0.0269, loss_sal: 0.6748, loss_video_cal: 0.3317, loss_layer_cal: 0.0201, loss_motion: 0.0185, loss: 1.1585, grad_norm: 0.8451, scale: 131072.0000
+[2024-10-03 09:37:43 INFO]: Epoch [12][100/226] lr: 0.0005, eta: 4:58:00, time: 1.902, data_time: 1.429, memory: 40057, loss_reg: 0.0840, loss_cls: 0.0268, loss_sal: 0.6670, loss_video_cal: 0.3315, loss_layer_cal: 0.0196, loss_motion: 0.0185, loss: 1.1475, grad_norm: 0.8494, scale: 131072.0000
+[2024-10-03 09:40:33 INFO]: Epoch [12][150/226] lr: 0.0005, eta: 4:53:19, time: 1.947, data_time: 1.447, memory: 40057, loss_reg: 0.0845, loss_cls: 0.0260, loss_sal: 0.6730, loss_video_cal: 0.3295, loss_layer_cal: 0.0198, loss_motion: 0.0186, loss: 1.1515, grad_norm: 0.8629, scale: 131072.0000
+[2024-10-03 09:43:22 INFO]: Epoch [12][200/226] lr: 0.0005, eta: 4:48:40, time: 1.921, data_time: 1.462, memory: 40057, loss_reg: 0.0853, loss_cls: 0.0266, loss_sal: 0.6759, loss_video_cal: 0.3316, loss_layer_cal: 0.0196, loss_motion: 0.0192, loss: 1.1581, grad_norm: 0.8538, scale: 131072.0000
+[2024-10-03 09:44:49 INFO]: Epoch [12][226/226] lr: 0.0005, eta: 4:46:16, time: 1.886, data_time: 1.458, memory: 40057, loss_reg: 0.0855, loss_cls: 0.0264, loss_sal: 0.6688, loss_video_cal: 0.3308, loss_layer_cal: 0.0201, loss_motion: 0.0187, loss: 1.1502, grad_norm: 0.8790, scale: 131072.0000
+[2024-10-03 09:44:49 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_12.pth...
+[2024-10-03 09:44:50 INFO]: Validating...
+[2024-10-03 09:46:26 INFO]: Epoch (val) [12][1550] loss_reg: 0.0902, loss_cls: 0.0329, loss_sal: 0.3373, loss_video_cal: 0.0000, loss_layer_cal: 0.0020, loss_motion: 3.4172, loss: 3.8796, MR-full-R1@0.3: 75.2300, MR-full-R1@0.5: 64.1900, MR-full-R1@0.7: 47.9400, MR-full-R5@0.3: 92.0000, MR-full-R5@0.5: 85.8100, MR-full-R5@0.7: 71.2300, MR-full-mAP: 44.2200, MR-full-mAP@0.5: 65.4600, MR-full-mAP@0.75: 46.4700, MR-full-mIoU: 58.4200, MR-long-mAP: 48.2600, MR-long-mIoU: 59.0500, MR-middle-mAP: 47.1400, MR-middle-mIoU: 53.9900, MR-short-mAP: 11.5100, MR-short-mIoU: 15.6700, HL-min-Fair-mAP: 25874.5605, HL-min-Fair-Hit1: 77.4200, HL-min-Good-mAP: 25871.0000, HL-min-Good-Hit1: 75.6800, HL-min-VeryGood-mAP: 25862.8594, HL-min-VeryGood-Hit1: 63.1600, best_MR-full-mAP: 44.2200, best_MR-full-mIoU: 58.4200, best_HL-min-VeryGood-mAP: 25862.8906, best_MR-full-R1@0.3: 76.9000, best_MR-full-R1@0.5: 66.1300, best_MR-full-R1@0.7: 47.9400
+[2024-10-03 09:49:28 INFO]: Epoch [13][50/226] lr: 0.0005, eta: 4:44:24, time: 1.947, data_time: 2.071, memory: 40057, loss_reg: 0.0843, loss_cls: 0.0255, loss_sal: 0.6636, loss_video_cal: 0.3295, loss_layer_cal: 0.0201, loss_motion: 0.0185, loss: 1.1415, grad_norm: 0.8822, scale: 131072.0000
+[2024-10-03 09:52:20 INFO]: Epoch [13][100/226] lr: 0.0005, eta: 4:39:54, time: 1.949, data_time: 1.488, memory: 40057, loss_reg: 0.0850, loss_cls: 0.0269, loss_sal: 0.6704, loss_video_cal: 0.3301, loss_layer_cal: 0.0197, loss_motion: 0.0185, loss: 1.1506, grad_norm: 0.8467, scale: 131072.0000
+[2024-10-03 09:55:10 INFO]: Epoch [13][150/226] lr: 0.0005, eta: 4:35:25, time: 1.940, data_time: 1.451, memory: 40057, loss_reg: 0.0835, loss_cls: 0.0263, loss_sal: 0.6652, loss_video_cal: 0.3285, loss_layer_cal: 0.0197, loss_motion: 0.0188, loss: 1.1420, grad_norm: 0.8403, scale: 131072.0000
+[2024-10-03 09:58:00 INFO]: Epoch [13][200/226] lr: 0.0005, eta: 4:31:00, time: 1.943, data_time: 1.466, memory: 40057, loss_reg: 0.0826, loss_cls: 0.0263, loss_sal: 0.6670, loss_video_cal: 0.3274, loss_layer_cal: 0.0202, loss_motion: 0.0192, loss: 1.1427, grad_norm: 0.8402, scale: 131072.0000
+[2024-10-03 09:59:27 INFO]: Epoch [13][226/226] lr: 0.0005, eta: 4:28:42, time: 1.900, data_time: 1.460, memory: 40057, loss_reg: 0.0826, loss_cls: 0.0261, loss_sal: 0.6637, loss_video_cal: 0.3316, loss_layer_cal: 0.0197, loss_motion: 0.0185, loss: 1.1421, grad_norm: 0.8672, scale: 131072.0000
+[2024-10-03 09:59:27 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_13.pth...
+[2024-10-03 09:59:28 INFO]: Validating...
+[2024-10-03 10:01:10 INFO]: Epoch (val) [13][1550] loss_reg: 0.0916, loss_cls: 0.0336, loss_sal: 0.3418, loss_video_cal: 0.0000, loss_layer_cal: 0.0019, loss_motion: 3.3932, loss: 3.8622, MR-full-R1@0.3: 76.7700, MR-full-R1@0.5: 65.4800, MR-full-R1@0.7: 49.2900, MR-full-R5@0.3: 91.5500, MR-full-R5@0.5: 83.6100, MR-full-R5@0.7: 69.8700, MR-full-mAP: 44.5800, MR-full-mAP@0.5: 65.5400, MR-full-mAP@0.75: 46.0700, MR-full-mIoU: 59.3200, MR-long-mAP: 48.9100, MR-long-mIoU: 60.0800, MR-middle-mAP: 46.9700, MR-middle-mIoU: 54.7500, MR-short-mAP: 12.4500, MR-short-mIoU: 16.0200, HL-min-Fair-mAP: 25874.5703, HL-min-Fair-Hit1: 77.7400, HL-min-Good-mAP: 25870.9805, HL-min-Good-Hit1: 75.8700, HL-min-VeryGood-mAP: 25862.8008, HL-min-VeryGood-Hit1: 62.3900, best_MR-full-mAP: 44.5800, best_MR-full-mIoU: 59.3200, best_HL-min-VeryGood-mAP: 25862.8906, best_MR-full-R1@0.3: 76.9000, best_MR-full-R1@0.5: 66.1300, best_MR-full-R1@0.7: 49.2900
+[2024-10-03 10:04:08 INFO]: Epoch [14][50/226] lr: 0.0005, eta: 4:26:43, time: 1.903, data_time: 2.128, memory: 40057, loss_reg: 0.0826, loss_cls: 0.0262, loss_sal: 0.6584, loss_video_cal: 0.3272, loss_layer_cal: 0.0199, loss_motion: 0.0187, loss: 1.1331, grad_norm: 0.8247, scale: 131072.0000
+[2024-10-03 10:06:55 INFO]: Epoch [14][100/226] lr: 0.0005, eta: 4:22:17, time: 1.913, data_time: 1.421, memory: 40057, loss_reg: 0.0830, loss_cls: 0.0257, loss_sal: 0.6636, loss_video_cal: 0.3279, loss_layer_cal: 0.0201, loss_motion: 0.0189, loss: 1.1393, grad_norm: 0.8169, scale: 131072.0000
+[2024-10-03 10:09:44 INFO]: Epoch [14][150/226] lr: 0.0005, eta: 4:17:58, time: 1.934, data_time: 1.452, memory: 40057, loss_reg: 0.0817, loss_cls: 0.0259, loss_sal: 0.6616, loss_video_cal: 0.3283, loss_layer_cal: 0.0200, loss_motion: 0.0192, loss: 1.1367, grad_norm: 0.8105, scale: 131072.0000
+[2024-10-03 10:12:31 INFO]: Epoch [14][200/226] lr: 0.0005, eta: 4:13:38, time: 1.914, data_time: 1.412, memory: 40057, loss_reg: 0.0819, loss_cls: 0.0257, loss_sal: 0.6663, loss_video_cal: 0.3275, loss_layer_cal: 0.0203, loss_motion: 0.0190, loss: 1.1407, grad_norm: 0.8511, scale: 131072.0000
+[2024-10-03 10:13:59 INFO]: Epoch [14][226/226] lr: 0.0005, eta: 4:11:26, time: 1.929, data_time: 1.473, memory: 40057, loss_reg: 0.0825, loss_cls: 0.0251, loss_sal: 0.6659, loss_video_cal: 0.3265, loss_layer_cal: 0.0206, loss_motion: 0.0186, loss: 1.1392, grad_norm: 0.8417, scale: 131072.0000
+[2024-10-03 10:13:59 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_14.pth...
+[2024-10-03 10:14:00 INFO]: Validating...
+[2024-10-03 10:16:02 INFO]: Epoch (val) [14][1550] loss_reg: 0.0879, loss_cls: 0.0323, loss_sal: 0.3347, loss_video_cal: 0.0000, loss_layer_cal: 0.0020, loss_motion: 3.3436, loss: 3.8004, MR-full-R1@0.3: 76.5800, MR-full-R1@0.5: 66.0600, MR-full-R1@0.7: 48.5200, MR-full-R5@0.3: 92.9700, MR-full-R5@0.5: 86.5800, MR-full-R5@0.7: 71.8100, MR-full-mAP: 45.0900, MR-full-mAP@0.5: 66.6400, MR-full-mAP@0.75: 47.0000, MR-full-mIoU: 58.8800, MR-long-mAP: 50.5600, MR-long-mIoU: 60.5900, MR-middle-mAP: 47.7900, MR-middle-mIoU: 54.4700, MR-short-mAP: 11.2200, MR-short-mIoU: 14.3300, HL-min-Fair-mAP: 25874.6797, HL-min-Fair-Hit1: 77.1600, HL-min-Good-mAP: 25871.0508, HL-min-Good-Hit1: 74.9000, HL-min-VeryGood-mAP: 25862.8691, HL-min-VeryGood-Hit1: 62.0000, best_MR-full-mAP: 45.0900, best_MR-full-mIoU: 59.3200, best_HL-min-VeryGood-mAP: 25862.8906, best_MR-full-R1@0.3: 76.9000, best_MR-full-R1@0.5: 66.1300, best_MR-full-R1@0.7: 49.2900
+[2024-10-03 10:19:03 INFO]: Epoch [15][50/226] lr: 0.0005, eta: 4:09:43, time: 1.914, data_time: 2.188, memory: 40057, loss_reg: 0.0811, loss_cls: 0.0252, loss_sal: 0.6637, loss_video_cal: 0.3255, loss_layer_cal: 0.0203, loss_motion: 0.0188, loss: 1.1346, grad_norm: 0.8507, scale: 131072.0000
+[2024-10-03 10:21:54 INFO]: Epoch [15][100/226] lr: 0.0005, eta: 4:05:31, time: 1.934, data_time: 1.475, memory: 40057, loss_reg: 0.0811, loss_cls: 0.0256, loss_sal: 0.6609, loss_video_cal: 0.3268, loss_layer_cal: 0.0202, loss_motion: 0.0189, loss: 1.1335, grad_norm: 0.8556, scale: 131072.0000
+[2024-10-03 10:24:45 INFO]: Epoch [15][150/226] lr: 0.0005, eta: 4:01:21, time: 1.949, data_time: 1.475, memory: 40057, loss_reg: 0.0819, loss_cls: 0.0255, loss_sal: 0.6620, loss_video_cal: 0.3262, loss_layer_cal: 0.0204, loss_motion: 0.0192, loss: 1.1353, grad_norm: 0.8649, scale: 131072.0000
+[2024-10-03 10:27:33 INFO]: Epoch [15][200/226] lr: 0.0005, eta: 3:57:11, time: 1.928, data_time: 1.446, memory: 40057, loss_reg: 0.0839, loss_cls: 0.0260, loss_sal: 0.6593, loss_video_cal: 0.3264, loss_layer_cal: 0.0199, loss_motion: 0.0184, loss: 1.1338, grad_norm: 0.8736, scale: 131072.0000
+[2024-10-03 10:29:02 INFO]: Epoch [15][226/226] lr: 0.0005, eta: 3:55:03, time: 1.927, data_time: 1.470, memory: 40057, loss_reg: 0.0818, loss_cls: 0.0260, loss_sal: 0.6634, loss_video_cal: 0.3251, loss_layer_cal: 0.0205, loss_motion: 0.0194, loss: 1.1363, grad_norm: 0.8307, scale: 131072.0000
+[2024-10-03 10:29:02 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_15.pth...
+[2024-10-03 10:29:03 INFO]: Validating...
+[2024-10-03 10:31:25 INFO]: Epoch (val) [15][1550] loss_reg: 0.0891, loss_cls: 0.0322, loss_sal: 0.3342, loss_video_cal: 0.0000, loss_layer_cal: 0.0022, loss_motion: 3.3072, loss: 3.7649, MR-full-R1@0.3: 77.7400, MR-full-R1@0.5: 66.3200, MR-full-R1@0.7: 49.1600, MR-full-R5@0.3: 92.7700, MR-full-R5@0.5: 86.2600, MR-full-R5@0.7: 71.4800, MR-full-mAP: 45.5900, MR-full-mAP@0.5: 66.9100, MR-full-mAP@0.75: 47.7400, MR-full-mIoU: 59.9700, MR-long-mAP: 50.7600, MR-long-mIoU: 60.5700, MR-middle-mAP: 47.9400, MR-middle-mIoU: 55.8000, MR-short-mAP: 12.1000, MR-short-mIoU: 15.3400, HL-min-Fair-mAP: 25874.8105, HL-min-Fair-Hit1: 78.2600, HL-min-Good-mAP: 25871.2305, HL-min-Good-Hit1: 76.3900, HL-min-VeryGood-mAP: 25862.9492, HL-min-VeryGood-Hit1: 62.8400, best_MR-full-mAP: 45.5900, best_MR-full-mIoU: 59.9700, best_HL-min-VeryGood-mAP: 25862.9492, best_MR-full-R1@0.3: 77.7400, best_MR-full-R1@0.5: 66.3200, best_MR-full-R1@0.7: 49.2900
+[2024-10-03 10:34:29 INFO]: Epoch [16][50/226] lr: 0.0005, eta: 3:53:31, time: 1.980, data_time: 2.129, memory: 40057, loss_reg: 0.0802, loss_cls: 0.0254, loss_sal: 0.6554, loss_video_cal: 0.3264, loss_layer_cal: 0.0206, loss_motion: 0.0190, loss: 1.1270, grad_norm: 0.8302, scale: 131072.0000
+[2024-10-03 10:37:18 INFO]: Epoch [16][100/226] lr: 0.0005, eta: 3:49:22, time: 1.929, data_time: 1.439, memory: 40057, loss_reg: 0.0818, loss_cls: 0.0251, loss_sal: 0.6598, loss_video_cal: 0.3247, loss_layer_cal: 0.0209, loss_motion: 0.0191, loss: 1.1314, grad_norm: 0.8659, scale: 131072.0000
+[2024-10-03 10:40:09 INFO]: Epoch [16][150/226] lr: 0.0005, eta: 3:45:18, time: 1.954, data_time: 1.463, memory: 40057, loss_reg: 0.0801, loss_cls: 0.0255, loss_sal: 0.6540, loss_video_cal: 0.3235, loss_layer_cal: 0.0205, loss_motion: 0.0187, loss: 1.1223, grad_norm: 0.8195, scale: 131072.0000
+[2024-10-03 10:42:58 INFO]: Epoch [16][200/226] lr: 0.0005, eta: 3:41:15, time: 1.919, data_time: 1.478, memory: 40057, loss_reg: 0.0801, loss_cls: 0.0249, loss_sal: 0.6552, loss_video_cal: 0.3239, loss_layer_cal: 0.0205, loss_motion: 0.0188, loss: 1.1234, grad_norm: 0.8387, scale: 131072.0000
+[2024-10-03 10:44:22 INFO]: Epoch [16][226/226] lr: 0.0005, eta: 3:39:06, time: 1.825, data_time: 1.402, memory: 40057, loss_reg: 0.0809, loss_cls: 0.0252, loss_sal: 0.6598, loss_video_cal: 0.3234, loss_layer_cal: 0.0209, loss_motion: 0.0193, loss: 1.1295, grad_norm: 0.8357, scale: 131072.0000
+[2024-10-03 10:44:22 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_16.pth...
+[2024-10-03 10:44:23 INFO]: Validating...
+[2024-10-03 10:46:28 INFO]: Epoch (val) [16][1550] loss_reg: 0.0882, loss_cls: 0.0321, loss_sal: 0.3325, loss_video_cal: 0.0000, loss_layer_cal: 0.0020, loss_motion: 3.2769, loss: 3.7316, MR-full-R1@0.3: 77.6100, MR-full-R1@0.5: 65.3500, MR-full-R1@0.7: 47.2900, MR-full-R5@0.3: 93.4200, MR-full-R5@0.5: 86.5200, MR-full-R5@0.7: 70.1300, MR-full-mAP: 44.7300, MR-full-mAP@0.5: 66.7500, MR-full-mAP@0.75: 45.9900, MR-full-mIoU: 59.2600, MR-long-mAP: 51.7800, MR-long-mIoU: 61.8700, MR-middle-mAP: 45.7600, MR-middle-mIoU: 54.1700, MR-short-mAP: 11.0300, MR-short-mIoU: 14.6900, HL-min-Fair-mAP: 25874.6699, HL-min-Fair-Hit1: 77.3500, HL-min-Good-mAP: 25871.1191, HL-min-Good-Hit1: 75.2300, HL-min-VeryGood-mAP: 25862.9492, HL-min-VeryGood-Hit1: 61.6100, best_MR-full-mAP: 45.5900, best_MR-full-mIoU: 59.9700, best_HL-min-VeryGood-mAP: 25862.9492, best_MR-full-R1@0.3: 77.7400, best_MR-full-R1@0.5: 66.3200, best_MR-full-R1@0.7: 49.2900
+[2024-10-03 10:49:33 INFO]: Epoch [17][50/226] lr: 0.0005, eta: 3:37:06, time: 1.952, data_time: 2.165, memory: 40057, loss_reg: 0.0795, loss_cls: 0.0249, loss_sal: 0.6502, loss_video_cal: 0.3243, loss_layer_cal: 0.0204, loss_motion: 0.0191, loss: 1.1184, grad_norm: 0.8480, scale: 131072.0000
+[2024-10-03 10:52:21 INFO]: Epoch [17][100/226] lr: 0.0005, eta: 3:33:02, time: 1.923, data_time: 1.429, memory: 40057, loss_reg: 0.0805, loss_cls: 0.0247, loss_sal: 0.6563, loss_video_cal: 0.3245, loss_layer_cal: 0.0209, loss_motion: 0.0190, loss: 1.1259, grad_norm: 0.8449, scale: 131072.0000
+[2024-10-03 10:55:09 INFO]: Epoch [17][150/226] lr: 0.0005, eta: 3:29:01, time: 1.909, data_time: 1.442, memory: 40057, loss_reg: 0.0790, loss_cls: 0.0254, loss_sal: 0.6565, loss_video_cal: 0.3234, loss_layer_cal: 0.0204, loss_motion: 0.0188, loss: 1.1236, grad_norm: 0.8345, scale: 131072.0000
+[2024-10-03 10:58:00 INFO]: Epoch [17][200/226] lr: 0.0005, eta: 3:25:04, time: 1.950, data_time: 1.471, memory: 40057, loss_reg: 0.0795, loss_cls: 0.0253, loss_sal: 0.6545, loss_video_cal: 0.3241, loss_layer_cal: 0.0207, loss_motion: 0.0187, loss: 1.1228, grad_norm: 0.8329, scale: 131072.0000
+[2024-10-03 10:59:27 INFO]: Epoch [17][226/226] lr: 0.0005, eta: 3:23:00, time: 1.911, data_time: 1.448, memory: 40057, loss_reg: 0.0808, loss_cls: 0.0245, loss_sal: 0.6623, loss_video_cal: 0.3252, loss_layer_cal: 0.0206, loss_motion: 0.0184, loss: 1.1318, grad_norm: 0.8605, scale: 131072.0000
+[2024-10-03 10:59:27 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_17.pth...
+[2024-10-03 10:59:28 INFO]: Validating...
+[2024-10-03 11:01:24 INFO]: Epoch (val) [17][1550] loss_reg: 0.0897, loss_cls: 0.0328, loss_sal: 0.3319, loss_video_cal: 0.0000, loss_layer_cal: 0.0022, loss_motion: 3.2325, loss: 3.6892, MR-full-R1@0.3: 77.6800, MR-full-R1@0.5: 65.1600, MR-full-R1@0.7: 47.4200, MR-full-R5@0.3: 93.2300, MR-full-R5@0.5: 86.4500, MR-full-R5@0.7: 71.4200, MR-full-mAP: 45.1500, MR-full-mAP@0.5: 67.1900, MR-full-mAP@0.75: 46.8400, MR-full-mIoU: 59.1500, MR-long-mAP: 52.5700, MR-long-mIoU: 63.2300, MR-middle-mAP: 45.5700, MR-middle-mIoU: 53.3500, MR-short-mAP: 11.3900, MR-short-mIoU: 14.5600, HL-min-Fair-mAP: 25874.8496, HL-min-Fair-Hit1: 77.6100, HL-min-Good-mAP: 25871.2500, HL-min-Good-Hit1: 75.6800, HL-min-VeryGood-mAP: 25862.9805, HL-min-VeryGood-Hit1: 62.1900, best_MR-full-mAP: 45.5900, best_MR-full-mIoU: 59.9700, best_HL-min-VeryGood-mAP: 25862.9805, best_MR-full-R1@0.3: 77.7400, best_MR-full-R1@0.5: 66.3200, best_MR-full-R1@0.7: 49.2900
+[2024-10-03 11:04:28 INFO]: Epoch [18][50/226] lr: 0.0005, eta: 3:20:43, time: 1.955, data_time: 2.112, memory: 40057, loss_reg: 0.0786, loss_cls: 0.0249, loss_sal: 0.6542, loss_video_cal: 0.3227, loss_layer_cal: 0.0207, loss_motion: 0.0188, loss: 1.1200, grad_norm: 0.8383, scale: 131072.0000
+[2024-10-03 11:07:17 INFO]: Epoch [18][100/226] lr: 0.0005, eta: 3:16:46, time: 1.943, data_time: 1.439, memory: 40057, loss_reg: 0.0791, loss_cls: 0.0249, loss_sal: 0.6486, loss_video_cal: 0.3220, loss_layer_cal: 0.0213, loss_motion: 0.0192, loss: 1.1150, grad_norm: 0.8441, scale: 131072.0000
+[2024-10-03 11:10:04 INFO]: Epoch [18][150/226] lr: 0.0005, eta: 3:12:49, time: 1.902, data_time: 1.422, memory: 40057, loss_reg: 0.0789, loss_cls: 0.0245, loss_sal: 0.6531, loss_video_cal: 0.3230, loss_layer_cal: 0.0207, loss_motion: 0.0191, loss: 1.1193, grad_norm: 0.8358, scale: 131072.0000
+[2024-10-03 11:12:54 INFO]: Epoch [18][200/226] lr: 0.0005, eta: 3:08:56, time: 1.940, data_time: 1.458, memory: 40057, loss_reg: 0.0792, loss_cls: 0.0247, loss_sal: 0.6537, loss_video_cal: 0.3232, loss_layer_cal: 0.0213, loss_motion: 0.0193, loss: 1.1214, grad_norm: 0.8675, scale: 241172.4844
+[2024-10-03 11:14:20 INFO]: Epoch [18][226/226] lr: 0.0005, eta: 3:06:54, time: 1.885, data_time: 1.465, memory: 40057, loss_reg: 0.0776, loss_cls: 0.0247, loss_sal: 0.6450, loss_video_cal: 0.3205, loss_layer_cal: 0.0206, loss_motion: 0.0189, loss: 1.1073, grad_norm: 0.8430, scale: 262144.0000
+[2024-10-03 11:14:21 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_18.pth...
+[2024-10-03 11:14:21 INFO]: Validating...
+[2024-10-03 11:16:13 INFO]: Epoch (val) [18][1550] loss_reg: 0.0886, loss_cls: 0.0329, loss_sal: 0.3379, loss_video_cal: 0.0000, loss_layer_cal: 0.0022, loss_motion: 3.1945, loss: 3.6561, MR-full-R1@0.3: 77.1000, MR-full-R1@0.5: 66.5200, MR-full-R1@0.7: 48.4500, MR-full-R5@0.3: 91.1000, MR-full-R5@0.5: 85.4800, MR-full-R5@0.7: 69.4200, MR-full-mAP: 45.1600, MR-full-mAP@0.5: 67.0200, MR-full-mAP@0.75: 46.7300, MR-full-mIoU: 59.5000, MR-long-mAP: 49.9100, MR-long-mIoU: 60.7400, MR-middle-mAP: 47.2700, MR-middle-mIoU: 54.9300, MR-short-mAP: 12.7000, MR-short-mIoU: 15.2700, HL-min-Fair-mAP: 25874.7695, HL-min-Fair-Hit1: 78.2600, HL-min-Good-mAP: 25871.1992, HL-min-Good-Hit1: 76.1900, HL-min-VeryGood-mAP: 25862.9707, HL-min-VeryGood-Hit1: 62.6500, best_MR-full-mAP: 45.5900, best_MR-full-mIoU: 59.9700, best_HL-min-VeryGood-mAP: 25862.9805, best_MR-full-R1@0.3: 77.7400, best_MR-full-R1@0.5: 66.5200, best_MR-full-R1@0.7: 49.2900
+[2024-10-03 11:19:14 INFO]: Epoch [19][50/226] lr: 0.0005, eta: 3:04:23, time: 1.933, data_time: 2.105, memory: 40057, loss_reg: 0.0777, loss_cls: 0.0248, loss_sal: 0.6516, loss_video_cal: 0.3241, loss_layer_cal: 0.0207, loss_motion: 0.0186, loss: 1.1176, grad_norm: 0.8158, scale: 262144.0000
+[2024-10-03 11:22:04 INFO]: Epoch [19][100/226] lr: 0.0005, eta: 3:00:32, time: 1.956, data_time: 1.449, memory: 40057, loss_reg: 0.0779, loss_cls: 0.0241, loss_sal: 0.6457, loss_video_cal: 0.3220, loss_layer_cal: 0.0205, loss_motion: 0.0188, loss: 1.1090, grad_norm: 0.8294, scale: 262144.0000
+[2024-10-03 11:24:54 INFO]: Epoch [19][150/226] lr: 0.0005, eta: 2:56:42, time: 1.948, data_time: 1.462, memory: 40057, loss_reg: 0.0782, loss_cls: 0.0241, loss_sal: 0.6524, loss_video_cal: 0.3220, loss_layer_cal: 0.0212, loss_motion: 0.0190, loss: 1.1170, grad_norm: 0.8337, scale: 262144.0000
+[2024-10-03 11:27:43 INFO]: Epoch [19][200/226] lr: 0.0005, eta: 2:52:53, time: 1.920, data_time: 1.453, memory: 40057, loss_reg: 0.0767, loss_cls: 0.0243, loss_sal: 0.6486, loss_video_cal: 0.3219, loss_layer_cal: 0.0209, loss_motion: 0.0190, loss: 1.1115, grad_norm: 0.8220, scale: 262144.0000
+[2024-10-03 11:29:10 INFO]: Epoch [19][226/226] lr: 0.0005, eta: 2:50:54, time: 1.902, data_time: 1.446, memory: 40057, loss_reg: 0.0774, loss_cls: 0.0247, loss_sal: 0.6514, loss_video_cal: 0.3190, loss_layer_cal: 0.0212, loss_motion: 0.0192, loss: 1.1129, grad_norm: 0.8751, scale: 262144.0000
+[2024-10-03 11:29:10 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_19.pth...
+[2024-10-03 11:29:11 INFO]: Validating...
+[2024-10-03 11:30:51 INFO]: Epoch (val) [19][1550] loss_reg: 0.0899, loss_cls: 0.0324, loss_sal: 0.3343, loss_video_cal: 0.0000, loss_layer_cal: 0.0023, loss_motion: 3.1634, loss: 3.6223, MR-full-R1@0.3: 77.1600, MR-full-R1@0.5: 65.3500, MR-full-R1@0.7: 49.0300, MR-full-R5@0.3: 92.7100, MR-full-R5@0.5: 86.1300, MR-full-R5@0.7: 71.1000, MR-full-mAP: 44.9900, MR-full-mAP@0.5: 66.3500, MR-full-mAP@0.75: 46.9600, MR-full-mIoU: 59.2600, MR-long-mAP: 50.2200, MR-long-mIoU: 61.3300, MR-middle-mAP: 46.4400, MR-middle-mIoU: 53.9900, MR-short-mAP: 13.0000, MR-short-mIoU: 15.8100, HL-min-Fair-mAP: 25874.7598, HL-min-Fair-Hit1: 78.7700, HL-min-Good-mAP: 25871.2207, HL-min-Good-Hit1: 76.7700, HL-min-VeryGood-mAP: 25862.9102, HL-min-VeryGood-Hit1: 63.1600, best_MR-full-mAP: 45.5900, best_MR-full-mIoU: 59.9700, best_HL-min-VeryGood-mAP: 25862.9805, best_MR-full-R1@0.3: 77.7400, best_MR-full-R1@0.5: 66.5200, best_MR-full-R1@0.7: 49.2900
+[2024-10-03 11:33:56 INFO]: Epoch [20][50/226] lr: 0.0005, eta: 2:48:12, time: 1.966, data_time: 2.157, memory: 40057, loss_reg: 0.0775, loss_cls: 0.0239, loss_sal: 0.6481, loss_video_cal: 0.3178, loss_layer_cal: 0.0213, loss_motion: 0.0193, loss: 1.1080, grad_norm: 0.8505, scale: 262144.0000
+[2024-10-03 11:36:46 INFO]: Epoch [20][100/226] lr: 0.0005, eta: 2:44:25, time: 1.952, data_time: 1.441, memory: 40057, loss_reg: 0.0772, loss_cls: 0.0245, loss_sal: 0.6490, loss_video_cal: 0.3220, loss_layer_cal: 0.0210, loss_motion: 0.0191, loss: 1.1128, grad_norm: 0.8119, scale: 262144.0000
+[2024-10-03 11:39:36 INFO]: Epoch [20][150/226] lr: 0.0005, eta: 2:40:38, time: 1.941, data_time: 1.448, memory: 40057, loss_reg: 0.0767, loss_cls: 0.0243, loss_sal: 0.6458, loss_video_cal: 0.3213, loss_layer_cal: 0.0209, loss_motion: 0.0191, loss: 1.1081, grad_norm: 0.8045, scale: 262144.0000
+[2024-10-03 11:42:26 INFO]: Epoch [20][200/226] lr: 0.0005, eta: 2:36:54, time: 1.942, data_time: 1.466, memory: 40057, loss_reg: 0.0757, loss_cls: 0.0240, loss_sal: 0.6441, loss_video_cal: 0.3195, loss_layer_cal: 0.0211, loss_motion: 0.0189, loss: 1.1033, grad_norm: 0.8168, scale: 262144.0000
+[2024-10-03 11:43:52 INFO]: Epoch [20][226/226] lr: 0.0005, eta: 2:34:56, time: 1.891, data_time: 1.429, memory: 40057, loss_reg: 0.0760, loss_cls: 0.0234, loss_sal: 0.6438, loss_video_cal: 0.3208, loss_layer_cal: 0.0211, loss_motion: 0.0187, loss: 1.1038, grad_norm: 0.8787, scale: 262144.0000
+[2024-10-03 11:43:52 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_20.pth...
+[2024-10-03 11:43:53 INFO]: Validating...
+[2024-10-03 11:45:33 INFO]: Epoch (val) [20][1550] loss_reg: 0.0884, loss_cls: 0.0333, loss_sal: 0.3380, loss_video_cal: 0.0000, loss_layer_cal: 0.0021, loss_motion: 3.1756, loss: 3.6374, MR-full-R1@0.3: 78.9000, MR-full-R1@0.5: 67.3500, MR-full-R1@0.7: 50.4500, MR-full-R5@0.3: 91.6100, MR-full-R5@0.5: 84.6500, MR-full-R5@0.7: 70.5800, MR-full-mAP: 45.6400, MR-full-mAP@0.5: 66.9500, MR-full-mAP@0.75: 47.7500, MR-full-mIoU: 60.7000, MR-long-mAP: 51.4900, MR-long-mIoU: 62.5700, MR-middle-mAP: 46.7600, MR-middle-mIoU: 54.8400, MR-short-mAP: 13.0800, MR-short-mIoU: 17.3400, HL-min-Fair-mAP: 25874.4902, HL-min-Fair-Hit1: 77.5500, HL-min-Good-mAP: 25871.0293, HL-min-Good-Hit1: 75.4200, HL-min-VeryGood-mAP: 25862.8301, HL-min-VeryGood-Hit1: 62.3900, best_MR-full-mAP: 45.6400, best_MR-full-mIoU: 60.7000, best_HL-min-VeryGood-mAP: 25862.9805, best_MR-full-R1@0.3: 78.9000, best_MR-full-R1@0.5: 67.3500, best_MR-full-R1@0.7: 50.4500
+[2024-10-03 11:48:37 INFO]: Epoch [21][50/226] lr: 5e-05, eta: 2:32:09, time: 1.975, data_time: 2.114, memory: 40057, loss_reg: 0.0731, loss_cls: 0.0230, loss_sal: 0.6405, loss_video_cal: 0.3190, loss_layer_cal: 0.0204, loss_motion: 0.0192, loss: 1.0952, grad_norm: 0.7712, scale: 262144.0000
+[2024-10-03 11:51:26 INFO]: Epoch [21][100/226] lr: 5e-05, eta: 2:28:25, time: 1.922, data_time: 1.460, memory: 40057, loss_reg: 0.0731, loss_cls: 0.0230, loss_sal: 0.6357, loss_video_cal: 0.3206, loss_layer_cal: 0.0202, loss_motion: 0.0192, loss: 1.0918, grad_norm: 0.7363, scale: 262144.0000
+[2024-10-03 11:54:13 INFO]: Epoch [21][150/226] lr: 5e-05, eta: 2:24:41, time: 1.937, data_time: 1.417, memory: 40057, loss_reg: 0.0715, loss_cls: 0.0221, loss_sal: 0.6302, loss_video_cal: 0.3166, loss_layer_cal: 0.0205, loss_motion: 0.0187, loss: 1.0795, grad_norm: 0.7394, scale: 262144.0000
+[2024-10-03 11:57:04 INFO]: Epoch [21][200/226] lr: 5e-05, eta: 2:21:00, time: 1.962, data_time: 1.445, memory: 40057, loss_reg: 0.0715, loss_cls: 0.0225, loss_sal: 0.6339, loss_video_cal: 0.3210, loss_layer_cal: 0.0207, loss_motion: 0.0187, loss: 1.0883, grad_norm: 0.7242, scale: 262144.0000
+[2024-10-03 11:58:32 INFO]: Epoch [21][226/226] lr: 5e-05, eta: 2:19:06, time: 1.924, data_time: 1.479, memory: 40057, loss_reg: 0.0718, loss_cls: 0.0231, loss_sal: 0.6375, loss_video_cal: 0.3157, loss_layer_cal: 0.0209, loss_motion: 0.0192, loss: 1.0882, grad_norm: 0.7462, scale: 262144.0000
+[2024-10-03 11:58:32 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_21.pth...
+[2024-10-03 11:58:33 INFO]: Validating...
+[2024-10-03 12:00:12 INFO]: Epoch (val) [21][1550] loss_reg: 0.0874, loss_cls: 0.0331, loss_sal: 0.3351, loss_video_cal: 0.0000, loss_layer_cal: 0.0022, loss_motion: 3.1426, loss: 3.6003, MR-full-R1@0.3: 78.1900, MR-full-R1@0.5: 67.7400, MR-full-R1@0.7: 51.1000, MR-full-R5@0.3: 91.9400, MR-full-R5@0.5: 85.5500, MR-full-R5@0.7: 72.0000, MR-full-mAP: 46.1900, MR-full-mAP@0.5: 67.3700, MR-full-mAP@0.75: 47.9200, MR-full-mIoU: 60.9600, MR-long-mAP: 51.1600, MR-long-mIoU: 62.0600, MR-middle-mAP: 48.0700, MR-middle-mIoU: 55.6300, MR-short-mAP: 13.1600, MR-short-mIoU: 16.8400, HL-min-Fair-mAP: 25874.7402, HL-min-Fair-Hit1: 79.1600, HL-min-Good-mAP: 25871.2305, HL-min-Good-Hit1: 77.1600, HL-min-VeryGood-mAP: 25862.9902, HL-min-VeryGood-Hit1: 64.0000, best_MR-full-mAP: 46.1900, best_MR-full-mIoU: 60.9600, best_HL-min-VeryGood-mAP: 25862.9902, best_MR-full-R1@0.3: 78.9000, best_MR-full-R1@0.5: 67.7400, best_MR-full-R1@0.7: 51.1000
+[2024-10-03 12:03:17 INFO]: Epoch [22][50/226] lr: 5e-05, eta: 2:16:13, time: 1.976, data_time: 2.188, memory: 40057, loss_reg: 0.0705, loss_cls: 0.0223, loss_sal: 0.6337, loss_video_cal: 0.3202, loss_layer_cal: 0.0205, loss_motion: 0.0186, loss: 1.0858, grad_norm: 0.7270, scale: 262144.0000
+[2024-10-03 12:06:08 INFO]: Epoch [22][100/226] lr: 5e-05, eta: 2:12:33, time: 1.938, data_time: 1.467, memory: 40057, loss_reg: 0.0699, loss_cls: 0.0220, loss_sal: 0.6280, loss_video_cal: 0.3159, loss_layer_cal: 0.0210, loss_motion: 0.0189, loss: 1.0756, grad_norm: 0.7469, scale: 262144.0000
+[2024-10-03 12:08:57 INFO]: Epoch [22][150/226] lr: 5e-05, eta: 2:08:54, time: 1.936, data_time: 1.450, memory: 40057, loss_reg: 0.0711, loss_cls: 0.0222, loss_sal: 0.6312, loss_video_cal: 0.3206, loss_layer_cal: 0.0205, loss_motion: 0.0189, loss: 1.0846, grad_norm: 0.7330, scale: 262144.0000
+[2024-10-03 12:11:45 INFO]: Epoch [22][200/226] lr: 5e-05, eta: 2:05:15, time: 1.925, data_time: 1.445, memory: 40057, loss_reg: 0.0715, loss_cls: 0.0226, loss_sal: 0.6334, loss_video_cal: 0.3193, loss_layer_cal: 0.0208, loss_motion: 0.0188, loss: 1.0864, grad_norm: 0.7368, scale: 262144.0000
+[2024-10-03 12:13:13 INFO]: Epoch [22][226/226] lr: 5e-05, eta: 2:03:21, time: 1.925, data_time: 1.473, memory: 40057, loss_reg: 0.0679, loss_cls: 0.0212, loss_sal: 0.6217, loss_video_cal: 0.3166, loss_layer_cal: 0.0198, loss_motion: 0.0182, loss: 1.0654, grad_norm: 0.7409, scale: 262144.0000
+[2024-10-03 12:13:14 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_22.pth...
+[2024-10-03 12:13:14 INFO]: Validating...
+[2024-10-03 12:15:18 INFO]: Epoch (val) [22][1550] loss_reg: 0.0870, loss_cls: 0.0335, loss_sal: 0.3349, loss_video_cal: 0.0000, loss_layer_cal: 0.0021, loss_motion: 3.1382, loss: 3.5958, MR-full-R1@0.3: 79.1000, MR-full-R1@0.5: 68.3900, MR-full-R1@0.7: 51.8100, MR-full-R5@0.3: 92.0000, MR-full-R5@0.5: 85.7400, MR-full-R5@0.7: 71.7400, MR-full-mAP: 46.6300, MR-full-mAP@0.5: 67.8900, MR-full-mAP@0.75: 47.8900, MR-full-mIoU: 61.4400, MR-long-mAP: 51.6500, MR-long-mIoU: 62.4700, MR-middle-mAP: 48.4800, MR-middle-mIoU: 56.5500, MR-short-mAP: 13.6100, MR-short-mIoU: 16.1400, HL-min-Fair-mAP: 25874.9199, HL-min-Fair-Hit1: 79.9400, HL-min-Good-mAP: 25871.4004, HL-min-Good-Hit1: 77.7400, HL-min-VeryGood-mAP: 25863.0898, HL-min-VeryGood-Hit1: 64.4500, best_MR-full-mAP: 46.6300, best_MR-full-mIoU: 61.4400, best_HL-min-VeryGood-mAP: 25863.0898, best_MR-full-R1@0.3: 79.1000, best_MR-full-R1@0.5: 68.3900, best_MR-full-R1@0.7: 51.8100
+[2024-10-03 12:18:21 INFO]: Epoch [23][50/226] lr: 5e-05, eta: 2:00:33, time: 1.932, data_time: 2.188, memory: 40057, loss_reg: 0.0698, loss_cls: 0.0217, loss_sal: 0.6302, loss_video_cal: 0.3178, loss_layer_cal: 0.0206, loss_motion: 0.0187, loss: 1.0788, grad_norm: 0.7266, scale: 262144.0000
+[2024-10-03 12:21:12 INFO]: Epoch [23][100/226] lr: 5e-05, eta: 1:56:55, time: 1.968, data_time: 1.444, memory: 40057, loss_reg: 0.0696, loss_cls: 0.0221, loss_sal: 0.6282, loss_video_cal: 0.3174, loss_layer_cal: 0.0207, loss_motion: 0.0184, loss: 1.0765, grad_norm: 0.7254, scale: 262144.0000
+[2024-10-03 12:24:03 INFO]: Epoch [23][150/226] lr: 5e-05, eta: 1:53:19, time: 1.961, data_time: 1.456, memory: 40057, loss_reg: 0.0703, loss_cls: 0.0221, loss_sal: 0.6284, loss_video_cal: 0.3158, loss_layer_cal: 0.0206, loss_motion: 0.0183, loss: 1.0754, grad_norm: 0.7242, scale: 262144.0000
+[2024-10-03 12:26:52 INFO]: Epoch [23][200/226] lr: 5e-05, eta: 1:49:42, time: 1.932, data_time: 1.450, memory: 40057, loss_reg: 0.0695, loss_cls: 0.0220, loss_sal: 0.6337, loss_video_cal: 0.3186, loss_layer_cal: 0.0203, loss_motion: 0.0188, loss: 1.0829, grad_norm: 0.7272, scale: 262144.0000
+[2024-10-03 12:28:19 INFO]: Epoch [23][226/226] lr: 5e-05, eta: 1:47:50, time: 1.892, data_time: 1.490, memory: 40057, loss_reg: 0.0689, loss_cls: 0.0220, loss_sal: 0.6256, loss_video_cal: 0.3143, loss_layer_cal: 0.0205, loss_motion: 0.0187, loss: 1.0700, grad_norm: 0.7185, scale: 262144.0000
+[2024-10-03 12:28:19 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_23.pth...
+[2024-10-03 12:28:20 INFO]: Validating...
+[2024-10-03 12:30:34 INFO]: Epoch (val) [23][1550] loss_reg: 0.0862, loss_cls: 0.0331, loss_sal: 0.3326, loss_video_cal: 0.0000, loss_layer_cal: 0.0021, loss_motion: 3.1339, loss: 3.5879, MR-full-R1@0.3: 79.1600, MR-full-R1@0.5: 68.2600, MR-full-R1@0.7: 51.4200, MR-full-R5@0.3: 92.2600, MR-full-R5@0.5: 86.2600, MR-full-R5@0.7: 72.3900, MR-full-mAP: 47.1200, MR-full-mAP@0.5: 68.0400, MR-full-mAP@0.75: 48.9500, MR-full-mIoU: 61.6000, MR-long-mAP: 51.7900, MR-long-mIoU: 62.2800, MR-middle-mAP: 49.5300, MR-middle-mIoU: 57.0600, MR-short-mAP: 12.8100, MR-short-mIoU: 15.9400, HL-min-Fair-mAP: 25875.0391, HL-min-Fair-Hit1: 80.0600, HL-min-Good-mAP: 25871.5000, HL-min-Good-Hit1: 78.0000, HL-min-VeryGood-mAP: 25863.1406, HL-min-VeryGood-Hit1: 64.3900, best_MR-full-mAP: 47.1200, best_MR-full-mIoU: 61.6000, best_HL-min-VeryGood-mAP: 25863.1406, best_MR-full-R1@0.3: 79.1600, best_MR-full-R1@0.5: 68.3900, best_MR-full-R1@0.7: 51.8100
+[2024-10-03 12:33:38 INFO]: Epoch [24][50/226] lr: 5e-05, eta: 1:44:59, time: 1.962, data_time: 2.145, memory: 40057, loss_reg: 0.0688, loss_cls: 0.0215, loss_sal: 0.6283, loss_video_cal: 0.3181, loss_layer_cal: 0.0204, loss_motion: 0.0181, loss: 1.0752, grad_norm: 0.7192, scale: 262144.0000
+[2024-10-03 12:36:26 INFO]: Epoch [24][100/226] lr: 5e-05, eta: 1:41:23, time: 1.925, data_time: 1.425, memory: 40057, loss_reg: 0.0691, loss_cls: 0.0218, loss_sal: 0.6273, loss_video_cal: 0.3161, loss_layer_cal: 0.0206, loss_motion: 0.0185, loss: 1.0733, grad_norm: 0.7199, scale: 262144.0000
+[2024-10-03 12:39:14 INFO]: Epoch [24][150/226] lr: 5e-05, eta: 1:37:48, time: 1.909, data_time: 1.453, memory: 40057, loss_reg: 0.0687, loss_cls: 0.0214, loss_sal: 0.6249, loss_video_cal: 0.3181, loss_layer_cal: 0.0206, loss_motion: 0.0182, loss: 1.0720, grad_norm: 0.7316, scale: 262144.0000
+[2024-10-03 12:42:04 INFO]: Epoch [24][200/226] lr: 5e-05, eta: 1:34:14, time: 1.936, data_time: 1.467, memory: 40057, loss_reg: 0.0687, loss_cls: 0.0221, loss_sal: 0.6263, loss_video_cal: 0.3164, loss_layer_cal: 0.0206, loss_motion: 0.0188, loss: 1.0730, grad_norm: 0.7364, scale: 262144.0000
+[2024-10-03 12:43:29 INFO]: Epoch [24][226/226] lr: 5e-05, eta: 1:32:22, time: 1.870, data_time: 1.418, memory: 40057, loss_reg: 0.0683, loss_cls: 0.0214, loss_sal: 0.6215, loss_video_cal: 0.3118, loss_layer_cal: 0.0207, loss_motion: 0.0186, loss: 1.0623, grad_norm: 0.7169, scale: 262144.0000
+[2024-10-03 12:43:30 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_24.pth...
+[2024-10-03 12:43:30 INFO]: Validating...
+[2024-10-03 12:46:04 INFO]: Epoch (val) [24][1550] loss_reg: 0.0869, loss_cls: 0.0333, loss_sal: 0.3367, loss_video_cal: 0.0000, loss_layer_cal: 0.0021, loss_motion: 3.1301, loss: 3.5891, MR-full-R1@0.3: 78.9700, MR-full-R1@0.5: 68.1900, MR-full-R1@0.7: 51.6800, MR-full-R5@0.3: 91.4200, MR-full-R5@0.5: 84.8400, MR-full-R5@0.7: 71.0300, MR-full-mAP: 46.4700, MR-full-mAP@0.5: 67.6500, MR-full-mAP@0.75: 47.8700, MR-full-mIoU: 61.4700, MR-long-mAP: 50.9500, MR-long-mIoU: 62.1500, MR-middle-mAP: 48.5300, MR-middle-mIoU: 56.5200, MR-short-mAP: 13.4000, MR-short-mIoU: 16.6900, HL-min-Fair-mAP: 25874.9004, HL-min-Fair-Hit1: 80.0000, HL-min-Good-mAP: 25871.3906, HL-min-Good-Hit1: 77.9400, HL-min-VeryGood-mAP: 25863.0801, HL-min-VeryGood-Hit1: 63.9400, best_MR-full-mAP: 47.1200, best_MR-full-mIoU: 61.6000, best_HL-min-VeryGood-mAP: 25863.1406, best_MR-full-R1@0.3: 79.1600, best_MR-full-R1@0.5: 68.3900, best_MR-full-R1@0.7: 51.8100
+[2024-10-03 12:49:12 INFO]: Epoch [25][50/226] lr: 5e-05, eta: 1:29:31, time: 2.004, data_time: 2.174, memory: 40057, loss_reg: 0.0684, loss_cls: 0.0213, loss_sal: 0.6274, loss_video_cal: 0.3155, loss_layer_cal: 0.0205, loss_motion: 0.0184, loss: 1.0714, grad_norm: 0.7406, scale: 262144.0000
+[2024-10-03 12:52:00 INFO]: Epoch [25][100/226] lr: 5e-05, eta: 1:25:57, time: 1.933, data_time: 1.433, memory: 40057, loss_reg: 0.0682, loss_cls: 0.0220, loss_sal: 0.6272, loss_video_cal: 0.3165, loss_layer_cal: 0.0206, loss_motion: 0.0184, loss: 1.0730, grad_norm: 0.7408, scale: 262144.0000
+[2024-10-03 12:54:50 INFO]: Epoch [25][150/226] lr: 5e-05, eta: 1:22:24, time: 1.939, data_time: 1.459, memory: 40057, loss_reg: 0.0682, loss_cls: 0.0213, loss_sal: 0.6265, loss_video_cal: 0.3168, loss_layer_cal: 0.0207, loss_motion: 0.0182, loss: 1.0717, grad_norm: 0.7221, scale: 262144.0000
+[2024-10-03 12:57:41 INFO]: Epoch [25][200/226] lr: 5e-05, eta: 1:18:52, time: 1.950, data_time: 1.470, memory: 40057, loss_reg: 0.0692, loss_cls: 0.0220, loss_sal: 0.6261, loss_video_cal: 0.3165, loss_layer_cal: 0.0204, loss_motion: 0.0183, loss: 1.0725, grad_norm: 0.7239, scale: 262144.0000
+[2024-10-03 12:59:09 INFO]: Epoch [25][226/226] lr: 5e-05, eta: 1:17:02, time: 1.912, data_time: 1.476, memory: 40057, loss_reg: 0.0683, loss_cls: 0.0208, loss_sal: 0.6268, loss_video_cal: 0.3153, loss_layer_cal: 0.0204, loss_motion: 0.0183, loss: 1.0698, grad_norm: 0.7285, scale: 262144.0000
+[2024-10-03 12:59:09 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_25.pth...
+[2024-10-03 12:59:10 INFO]: Validating...
+[2024-10-03 13:01:07 INFO]: Epoch (val) [25][1550] loss_reg: 0.0861, loss_cls: 0.0334, loss_sal: 0.3322, loss_video_cal: 0.0000, loss_layer_cal: 0.0021, loss_motion: 3.1344, loss: 3.5882, MR-full-R1@0.3: 80.3200, MR-full-R1@0.5: 69.0300, MR-full-R1@0.7: 52.0600, MR-full-R5@0.3: 92.5800, MR-full-R5@0.5: 86.3900, MR-full-R5@0.7: 71.9400, MR-full-mAP: 46.9400, MR-full-mAP@0.5: 68.5300, MR-full-mAP@0.75: 48.8100, MR-full-mIoU: 61.9700, MR-long-mAP: 51.8000, MR-long-mIoU: 62.7800, MR-middle-mAP: 49.1500, MR-middle-mIoU: 57.2800, MR-short-mAP: 12.8400, MR-short-mIoU: 16.2800, HL-min-Fair-mAP: 25875.0000, HL-min-Fair-Hit1: 80.3200, HL-min-Good-mAP: 25871.4805, HL-min-Good-Hit1: 78.0600, HL-min-VeryGood-mAP: 25863.1309, HL-min-VeryGood-Hit1: 64.6500, best_MR-full-mAP: 47.1200, best_MR-full-mIoU: 61.9700, best_HL-min-VeryGood-mAP: 25863.1406, best_MR-full-R1@0.3: 80.3200, best_MR-full-R1@0.5: 69.0300, best_MR-full-R1@0.7: 52.0600
+[2024-10-03 13:04:10 INFO]: Epoch [26][50/226] lr: 5e-05, eta: 1:13:55, time: 1.960, data_time: 2.088, memory: 40057, loss_reg: 0.0695, loss_cls: 0.0219, loss_sal: 0.6227, loss_video_cal: 0.3155, loss_layer_cal: 0.0203, loss_motion: 0.0186, loss: 1.0684, grad_norm: 0.7154, scale: 262144.0000
+[2024-10-03 13:06:57 INFO]: Epoch [26][100/226] lr: 5e-05, eta: 1:10:23, time: 1.904, data_time: 1.439, memory: 40057, loss_reg: 0.0682, loss_cls: 0.0218, loss_sal: 0.6283, loss_video_cal: 0.3159, loss_layer_cal: 0.0205, loss_motion: 0.0182, loss: 1.0730, grad_norm: 0.7091, scale: 262144.0000
+[2024-10-03 13:09:46 INFO]: Epoch [26][150/226] lr: 5e-05, eta: 1:06:52, time: 1.924, data_time: 1.435, memory: 40057, loss_reg: 0.0668, loss_cls: 0.0207, loss_sal: 0.6248, loss_video_cal: 0.3171, loss_layer_cal: 0.0208, loss_motion: 0.0183, loss: 1.0685, grad_norm: 0.7171, scale: 262144.0000
+[2024-10-03 13:12:34 INFO]: Epoch [26][200/226] lr: 5e-05, eta: 1:03:21, time: 1.926, data_time: 1.439, memory: 40057, loss_reg: 0.0675, loss_cls: 0.0214, loss_sal: 0.6264, loss_video_cal: 0.3163, loss_layer_cal: 0.0206, loss_motion: 0.0183, loss: 1.0705, grad_norm: 0.7380, scale: 262144.0000
+[2024-10-03 13:14:00 INFO]: Epoch [26][226/226] lr: 5e-05, eta: 1:01:32, time: 1.866, data_time: 1.454, memory: 40057, loss_reg: 0.0673, loss_cls: 0.0210, loss_sal: 0.6253, loss_video_cal: 0.3165, loss_layer_cal: 0.0202, loss_motion: 0.0178, loss: 1.0680, grad_norm: 0.7629, scale: 262144.0000
+[2024-10-03 13:14:00 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_26.pth...
+[2024-10-03 13:14:01 INFO]: Validating...
+[2024-10-03 13:15:53 INFO]: Epoch (val) [26][1550] loss_reg: 0.0868, loss_cls: 0.0335, loss_sal: 0.3362, loss_video_cal: 0.0000, loss_layer_cal: 0.0021, loss_motion: 3.1333, loss: 3.5918, MR-full-R1@0.3: 78.5800, MR-full-R1@0.5: 67.8700, MR-full-R1@0.7: 51.8100, MR-full-R5@0.3: 91.6800, MR-full-R5@0.5: 85.6800, MR-full-R5@0.7: 71.3500, MR-full-mAP: 46.9600, MR-full-mAP@0.5: 68.1100, MR-full-mAP@0.75: 49.0700, MR-full-mIoU: 61.4600, MR-long-mAP: 51.5700, MR-long-mIoU: 62.3600, MR-middle-mAP: 48.9500, MR-middle-mIoU: 56.5400, MR-short-mAP: 13.5800, MR-short-mIoU: 16.6200, HL-min-Fair-mAP: 25875.0391, HL-min-Fair-Hit1: 80.0600, HL-min-Good-mAP: 25871.4805, HL-min-Good-Hit1: 77.5500, HL-min-VeryGood-mAP: 25863.0996, HL-min-VeryGood-Hit1: 63.6100, best_MR-full-mAP: 47.1200, best_MR-full-mIoU: 61.9700, best_HL-min-VeryGood-mAP: 25863.1406, best_MR-full-R1@0.3: 80.3200, best_MR-full-R1@0.5: 69.0300, best_MR-full-R1@0.7: 52.0600
+[2024-10-03 13:18:54 INFO]: Epoch [27][50/226] lr: 5e-05, eta: 0:58:21, time: 1.946, data_time: 2.097, memory: 40057, loss_reg: 0.0673, loss_cls: 0.0212, loss_sal: 0.6268, loss_video_cal: 0.3159, loss_layer_cal: 0.0203, loss_motion: 0.0181, loss: 1.0696, grad_norm: 0.7283, scale: 262144.0000
+[2024-10-03 13:21:44 INFO]: Epoch [27][100/226] lr: 5e-05, eta: 0:54:51, time: 1.951, data_time: 1.447, memory: 40057, loss_reg: 0.0671, loss_cls: 0.0212, loss_sal: 0.6273, loss_video_cal: 0.3159, loss_layer_cal: 0.0205, loss_motion: 0.0184, loss: 1.0704, grad_norm: 0.7283, scale: 262144.0000
+[2024-10-03 13:24:33 INFO]: Epoch [27][150/226] lr: 5e-05, eta: 0:51:22, time: 1.927, data_time: 1.445, memory: 40057, loss_reg: 0.0684, loss_cls: 0.0213, loss_sal: 0.6261, loss_video_cal: 0.3151, loss_layer_cal: 0.0203, loss_motion: 0.0180, loss: 1.0692, grad_norm: 0.7400, scale: 398458.8750
+[2024-10-03 13:27:20 INFO]: Epoch [27][200/226] lr: 5e-05, eta: 0:47:53, time: 1.933, data_time: 1.410, memory: 40057, loss_reg: 0.0679, loss_cls: 0.0215, loss_sal: 0.6257, loss_video_cal: 0.3157, loss_layer_cal: 0.0205, loss_motion: 0.0187, loss: 1.0700, grad_norm: 0.7288, scale: 524288.0000
+[2024-10-03 13:28:46 INFO]: Epoch [27][226/226] lr: 5e-05, eta: 0:46:05, time: 1.907, data_time: 1.403, memory: 40057, loss_reg: 0.0677, loss_cls: 0.0215, loss_sal: 0.6235, loss_video_cal: 0.3155, loss_layer_cal: 0.0199, loss_motion: 0.0184, loss: 1.0667, grad_norm: 0.7494, scale: 524288.0000
+[2024-10-03 13:28:46 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_27.pth...
+[2024-10-03 13:28:47 INFO]: Validating...
+[2024-10-03 13:30:30 INFO]: Epoch (val) [27][1550] loss_reg: 0.0864, loss_cls: 0.0334, loss_sal: 0.3355, loss_video_cal: 0.0000, loss_layer_cal: 0.0021, loss_motion: 3.1382, loss: 3.5956, MR-full-R1@0.3: 78.8400, MR-full-R1@0.5: 68.7100, MR-full-R1@0.7: 51.7400, MR-full-R5@0.3: 91.6800, MR-full-R5@0.5: 84.6500, MR-full-R5@0.7: 71.4800, MR-full-mAP: 46.7900, MR-full-mAP@0.5: 67.9800, MR-full-mAP@0.75: 48.5100, MR-full-mIoU: 61.5300, MR-long-mAP: 51.0300, MR-long-mIoU: 61.9800, MR-middle-mAP: 49.0200, MR-middle-mIoU: 57.0100, MR-short-mAP: 13.5000, MR-short-mIoU: 16.0800, HL-min-Fair-mAP: 25874.9805, HL-min-Fair-Hit1: 80.3200, HL-min-Good-mAP: 25871.4395, HL-min-Good-Hit1: 78.0000, HL-min-VeryGood-mAP: 25863.0898, HL-min-VeryGood-Hit1: 64.7100, best_MR-full-mAP: 47.1200, best_MR-full-mIoU: 61.9700, best_HL-min-VeryGood-mAP: 25863.1406, best_MR-full-R1@0.3: 80.3200, best_MR-full-R1@0.5: 69.0300, best_MR-full-R1@0.7: 52.0600
+[2024-10-03 13:33:33 INFO]: Epoch [28][50/226] lr: 5e-05, eta: 0:42:49, time: 1.928, data_time: 2.148, memory: 40057, loss_reg: 0.0669, loss_cls: 0.0211, loss_sal: 0.6221, loss_video_cal: 0.3153, loss_layer_cal: 0.0204, loss_motion: 0.0180, loss: 1.0638, grad_norm: 0.7265, scale: 524288.0000
+[2024-10-03 13:36:22 INFO]: Epoch [28][100/226] lr: 5e-05, eta: 0:39:21, time: 1.941, data_time: 1.434, memory: 40057, loss_reg: 0.0677, loss_cls: 0.0210, loss_sal: 0.6196, loss_video_cal: 0.3155, loss_layer_cal: 0.0202, loss_motion: 0.0184, loss: 1.0623, grad_norm: 0.7162, scale: 524288.0000
+[2024-10-03 13:39:11 INFO]: Epoch [28][150/226] lr: 5e-05, eta: 0:35:54, time: 1.937, data_time: 1.443, memory: 40057, loss_reg: 0.0678, loss_cls: 0.0216, loss_sal: 0.6226, loss_video_cal: 0.3146, loss_layer_cal: 0.0206, loss_motion: 0.0184, loss: 1.0656, grad_norm: 0.7361, scale: 524288.0000
+[2024-10-03 13:41:58 INFO]: Epoch [28][200/226] lr: 5e-05, eta: 0:32:27, time: 1.921, data_time: 1.433, memory: 40057, loss_reg: 0.0675, loss_cls: 0.0212, loss_sal: 0.6245, loss_video_cal: 0.3162, loss_layer_cal: 0.0207, loss_motion: 0.0182, loss: 1.0683, grad_norm: 0.7371, scale: 524288.0000
+[2024-10-03 13:43:21 INFO]: Epoch [28][226/226] lr: 5e-05, eta: 0:30:40, time: 1.813, data_time: 1.391, memory: 40057, loss_reg: 0.0655, loss_cls: 0.0205, loss_sal: 0.6252, loss_video_cal: 0.3114, loss_layer_cal: 0.0204, loss_motion: 0.0181, loss: 1.0612, grad_norm: 0.7289, scale: 524288.0000
+[2024-10-03 13:43:22 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_28.pth...
+[2024-10-03 13:43:22 INFO]: Validating...
+[2024-10-03 13:44:49 INFO]: Epoch (val) [28][1550] loss_reg: 0.0866, loss_cls: 0.0339, loss_sal: 0.3363, loss_video_cal: 0.0000, loss_layer_cal: 0.0021, loss_motion: 3.1392, loss: 3.5981, MR-full-R1@0.3: 78.5200, MR-full-R1@0.5: 67.9400, MR-full-R1@0.7: 52.0600, MR-full-R5@0.3: 91.8100, MR-full-R5@0.5: 85.3500, MR-full-R5@0.7: 70.7100, MR-full-mAP: 46.4800, MR-full-mAP@0.5: 67.7700, MR-full-mAP@0.75: 48.1900, MR-full-mIoU: 61.0600, MR-long-mAP: 51.3500, MR-long-mIoU: 62.1000, MR-middle-mAP: 48.0500, MR-middle-mIoU: 55.8900, MR-short-mAP: 14.1600, MR-short-mIoU: 16.6100, HL-min-Fair-mAP: 25874.9004, HL-min-Fair-Hit1: 79.9400, HL-min-Good-mAP: 25871.3906, HL-min-Good-Hit1: 77.6800, HL-min-VeryGood-mAP: 25863.0293, HL-min-VeryGood-Hit1: 64.0600, best_MR-full-mAP: 47.1200, best_MR-full-mIoU: 61.9700, best_HL-min-VeryGood-mAP: 25863.1406, best_MR-full-R1@0.3: 80.3200, best_MR-full-R1@0.5: 69.0300, best_MR-full-R1@0.7: 52.0600
+[2024-10-03 13:47:44 INFO]: Epoch [29][50/226] lr: 5e-05, eta: 0:27:20, time: 1.854, data_time: 2.063, memory: 40057, loss_reg: 0.0672, loss_cls: 0.0209, loss_sal: 0.6200, loss_video_cal: 0.3144, loss_layer_cal: 0.0205, loss_motion: 0.0179, loss: 1.0610, grad_norm: 0.7305, scale: 524288.0000
+[2024-10-03 13:50:30 INFO]: Epoch [29][100/226] lr: 5e-05, eta: 0:23:54, time: 1.907, data_time: 1.407, memory: 40057, loss_reg: 0.0665, loss_cls: 0.0210, loss_sal: 0.6221, loss_video_cal: 0.3155, loss_layer_cal: 0.0203, loss_motion: 0.0181, loss: 1.0635, grad_norm: 0.7493, scale: 524288.0000
+[2024-10-03 13:53:17 INFO]: Epoch [29][150/226] lr: 5e-05, eta: 0:20:28, time: 1.936, data_time: 1.417, memory: 40057, loss_reg: 0.0670, loss_cls: 0.0214, loss_sal: 0.6221, loss_video_cal: 0.3151, loss_layer_cal: 0.0204, loss_motion: 0.0186, loss: 1.0647, grad_norm: 0.7308, scale: 524288.0000
+[2024-10-03 13:56:07 INFO]: Epoch [29][200/226] lr: 5e-05, eta: 0:17:04, time: 1.973, data_time: 1.427, memory: 40057, loss_reg: 0.0676, loss_cls: 0.0212, loss_sal: 0.6249, loss_video_cal: 0.3144, loss_layer_cal: 0.0205, loss_motion: 0.0183, loss: 1.0668, grad_norm: 0.7427, scale: 524288.0000
+[2024-10-03 13:57:35 INFO]: Epoch [29][226/226] lr: 5e-05, eta: 0:15:17, time: 1.953, data_time: 1.424, memory: 40057, loss_reg: 0.0672, loss_cls: 0.0210, loss_sal: 0.6233, loss_video_cal: 0.3137, loss_layer_cal: 0.0206, loss_motion: 0.0179, loss: 1.0636, grad_norm: 0.7305, scale: 524288.0000
+[2024-10-03 13:57:35 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_29.pth...
+[2024-10-03 13:57:36 INFO]: Validating...
+[2024-10-03 13:59:14 INFO]: Epoch (val) [29][1550] loss_reg: 0.0868, loss_cls: 0.0335, loss_sal: 0.3366, loss_video_cal: 0.0000, loss_layer_cal: 0.0021, loss_motion: 3.1377, loss: 3.5967, MR-full-R1@0.3: 78.6500, MR-full-R1@0.5: 68.5800, MR-full-R1@0.7: 52.1900, MR-full-R5@0.3: 91.5500, MR-full-R5@0.5: 85.4200, MR-full-R5@0.7: 71.1000, MR-full-mAP: 46.9100, MR-full-mAP@0.5: 68.1800, MR-full-mAP@0.75: 49.1800, MR-full-mIoU: 61.4700, MR-long-mAP: 51.4000, MR-long-mIoU: 62.3800, MR-middle-mAP: 48.8700, MR-middle-mIoU: 56.4800, MR-short-mAP: 13.8300, MR-short-mIoU: 16.4500, HL-min-Fair-mAP: 25874.9492, HL-min-Fair-Hit1: 80.1900, HL-min-Good-mAP: 25871.3906, HL-min-Good-Hit1: 77.8100, HL-min-VeryGood-mAP: 25863.0801, HL-min-VeryGood-Hit1: 64.2600, best_MR-full-mAP: 47.1200, best_MR-full-mIoU: 61.9700, best_HL-min-VeryGood-mAP: 25863.1406, best_MR-full-R1@0.3: 80.3200, best_MR-full-R1@0.5: 69.0300, best_MR-full-R1@0.7: 52.1900
+[2024-10-03 14:02:19 INFO]: Epoch [30][50/226] lr: 5e-05, eta: 0:11:56, time: 1.939, data_time: 2.208, memory: 40057, loss_reg: 0.0663, loss_cls: 0.0208, loss_sal: 0.6210, loss_video_cal: 0.3150, loss_layer_cal: 0.0205, loss_motion: 0.0183, loss: 1.0620, grad_norm: 0.7123, scale: 524288.0000
+[2024-10-03 14:05:06 INFO]: Epoch [30][100/226] lr: 5e-05, eta: 0:08:32, time: 1.918, data_time: 1.421, memory: 40057, loss_reg: 0.0667, loss_cls: 0.0208, loss_sal: 0.6238, loss_video_cal: 0.3148, loss_layer_cal: 0.0205, loss_motion: 0.0183, loss: 1.0649, grad_norm: 0.7313, scale: 524288.0000
+[2024-10-03 14:07:53 INFO]: Epoch [30][150/226] lr: 5e-05, eta: 0:05:08, time: 1.931, data_time: 1.424, memory: 40057, loss_reg: 0.0670, loss_cls: 0.0213, loss_sal: 0.6260, loss_video_cal: 0.3170, loss_layer_cal: 0.0204, loss_motion: 0.0180, loss: 1.0697, grad_norm: 0.7263, scale: 524288.0000
+[2024-10-03 14:10:32 INFO]: Epoch [30][200/226] lr: 5e-05, eta: 0:01:45, time: 1.799, data_time: 1.380, memory: 40057, loss_reg: 0.0658, loss_cls: 0.0209, loss_sal: 0.6229, loss_video_cal: 0.3129, loss_layer_cal: 0.0205, loss_motion: 0.0182, loss: 1.0612, grad_norm: 0.7461, scale: 524288.0000
+[2024-10-03 14:11:56 INFO]: Epoch [30][226/226] lr: 5e-05, eta: 0:00:00, time: 1.822, data_time: 1.414, memory: 40057, loss_reg: 0.0673, loss_cls: 0.0212, loss_sal: 0.6252, loss_video_cal: 0.3155, loss_layer_cal: 0.0205, loss_motion: 0.0182, loss: 1.0680, grad_norm: 0.7226, scale: 524288.0000
+[2024-10-03 14:11:57 INFO]: Saving checkpoint to work_dirs/r2_tuning_qvhighlights_0/epoch_30.pth...
+[2024-10-03 14:11:57 INFO]: Validating...
+[2024-10-03 14:14:01 INFO]: Epoch (val) [30][1550] loss_reg: 0.0873, loss_cls: 0.0341, loss_sal: 0.3365, loss_video_cal: 0.0000, loss_layer_cal: 0.0021, loss_motion: 3.1442, loss: 3.6042, MR-full-R1@0.3: 78.8400, MR-full-R1@0.5: 68.3200, MR-full-R1@0.7: 52.0000, MR-full-R5@0.3: 91.2300, MR-full-R5@0.5: 84.5800, MR-full-R5@0.7: 70.3200, MR-full-mAP: 46.2500, MR-full-mAP@0.5: 67.7000, MR-full-mAP@0.75: 48.0100, MR-full-mIoU: 61.3400, MR-long-mAP: 50.3700, MR-long-mIoU: 61.4700, MR-middle-mAP: 48.4400, MR-middle-mIoU: 56.6200, MR-short-mAP: 13.2900, MR-short-mIoU: 16.8300, HL-min-Fair-mAP: 25874.8906, HL-min-Fair-Hit1: 80.7100, HL-min-Good-mAP: 25871.3906, HL-min-Good-Hit1: 78.3900, HL-min-VeryGood-mAP: 25863.0605, HL-min-VeryGood-Hit1: 64.9000, best_MR-full-mAP: 47.1200, best_MR-full-mIoU: 61.9700, best_HL-min-VeryGood-mAP: 25863.1406, best_MR-full-R1@0.3: 80.3200, best_MR-full-R1@0.5: 69.0300, best_MR-full-R1@0.7: 52.1900
+[2024-10-03 14:14:01 INFO]: Overall training speed: 6780 iterations in 3:38:00 (1.9293 s/it)
+[2024-10-03 14:14:01 INFO]: Done running in 7:40:03 (3:24:37 on hooks)
