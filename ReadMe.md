@@ -1,10 +1,4 @@
-
-
-## ToDo
-
-We are preparing the code, please wait for a while. And we provide the training logs file in `logs` for the time being. 
-
-If problems occur when reproducing the results, please feel free to contact us at github or email.
+# Efficient Pre-trained Semantics Refinement for Video Temporal Grounding
 
 
 ## Dataset Preparation
@@ -54,6 +48,15 @@ torchrun --nproc_per_node=<num-gpus> tools/launch.py <path-to-config>
 ```bash
 python tools/launch.py <path-to-config> --checkpoint <path-to-checkpoint> --eval
 ```
+
+## Notes
+
+If problems occur when reproducing the results, please feel free to contact us at github or email.
+
+Maybe you need to change the `config` file to the correct path.
+
+Some issues may be fixed by these issues in [Baseline Repository](https://github.com/yeliudev/R2-Tuning)
+
 
 ## Acknowledgement
 
